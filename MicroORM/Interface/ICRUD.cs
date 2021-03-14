@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 
 namespace MicroORM.Interface
@@ -6,6 +7,7 @@ namespace MicroORM.Interface
     public interface ICRUD<T> where T : class, new()
     {
         (int, bool) Insert(T t, DbTransaction transaction = null);
+        (int, bool) Insert(Action<T> item, DbTransaction transaction = null);
         (int, bool) Insert<M>(M t, DbTransaction transaction = null) where M : class, new();
 
         bool Delet(int id);
@@ -22,7 +24,7 @@ namespace MicroORM.Interface
 
         bool Update(T t, int id);
         bool Update<M>(M t, int id) where M : class, new();
-
+        bool Update(Action<Dictionary<string, object>> items, int id);
         bool Update(string[] columns, object[] values, int id);
         bool Update<M>(string[] columns, object[] values, int id) where M : class, new();
 

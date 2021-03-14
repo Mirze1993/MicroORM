@@ -23,6 +23,23 @@ namespace MicroORM
             return commander;
         }
 
+        public CommanderBase CreateCommanderAsync()
+        {
+            CommanderBase commander = null; ;
+            switch (ORMConfig.DbType)
+            {
+                case DbType.MSSQL:
+                    commander = new SqlCommander();
+                    break;
+                case DbType.Oracle:
+                    commander = new OracleCommander();
+                    break;
+                default:
+                    break;
+            }
+            return commander;
+        }
+
         public  IQuery CreateQuary()
         {
             IQuery query = null;

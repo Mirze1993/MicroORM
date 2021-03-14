@@ -42,7 +42,7 @@ namespace MicroORM
             }
             catch (Exception e)
             {
-                //LogManager.GetLogger(GetType().Name).Error(e.Message);
+                new Logging.LogWriteFile().WriteFile(e.Message, Logging.LogLevel.Error);
             }
         }
     }

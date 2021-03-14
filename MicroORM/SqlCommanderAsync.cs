@@ -1,15 +1,13 @@
-﻿
-using MicroORM.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace MicroORM
 {
-    public class SqlCommander : CommanderBase
-    {      
-
+    public class SqlCommanderAsync:CommanderBaseAsync
+    {
         public override List<DbParameter> SetParametrs<T>(T t)
         {
             List<DbParameter> parametrs = new List<DbParameter>();
@@ -37,7 +35,7 @@ namespace MicroORM
         }
 
 
-        public SqlCommander()
+        public  SqlCommanderAsync()
         {
             connectionString = ORMConfig.ConnectionString;
             try
@@ -46,11 +44,8 @@ namespace MicroORM
             }
             catch (Exception e)
             {
-                new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                new Logging.LogWriteFile().WriteFile(e.Message, Logging.LogLevel.Error);
             }
-                        
         }
-
-
     }
 }

@@ -1,15 +1,16 @@
-﻿
+﻿using MicroORM.Logging;
 using MicroORM.Attributes;
-using MicroORM.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace MicroORM
 {
-    public abstract class CommanderBase : IDisposable
+    public abstract class CommanderBaseAsync:IAsyncDisposable 
     {
         protected DbConnection connection;
         public DbDataReader reader;
@@ -17,7 +18,7 @@ namespace MicroORM
 
 
         protected string connectionString;
-      
+
         public abstract List<DbParameter> SetParametrs<T>(T t);
 
 
@@ -26,16 +27,15 @@ namespace MicroORM
 
         public abstract DbParameter SetOutputParametr();
 
-        protected void ConnectionOpen()
+        protected async Task ConnectionOpenAsync()
         {
-            if (connection.State != ConnectionState.Open) connection.Open();
+            if (connection.State != ConnectionState.Open)await connection.OpenAsync();
         }
 
 
-
-        public DbTransaction TransactionStart()
+        public async Task<DbTransaction> TransactionStartAsync()
         {
-            return connection.BeginTransaction(IsolationLevel.Serializable);
+            return await connection.BeginTransactionAsync(IsolationLevel.Serializable);
         }
 
         protected void CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
@@ -49,83 +49,80 @@ namespace MicroORM
 
 
 
-        public bool NonQuery(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public async Task<bool> NonQueryAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
             CommandStart(commandText, parameters, commandType, transaction);
-            ConnectionOpen();
+            await ConnectionOpenAsync();
             bool b = false;
             try
             {
-                b = command.ExecuteNonQuery() > 0;
+                b =await command.ExecuteNonQueryAsync() > 0;
             }
             catch (Exception e)
             {
-                new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                await new LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
             }
             return b;
         }
 
 
-
-
-        public (object, bool) Scaller(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public async Task<(object, bool)> ScallerAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
             CommandStart(commandText, parameters, commandType, transaction);
-            ConnectionOpen();
+            await ConnectionOpenAsync();
             object b = null;
             try
             {
-                b = command.ExecuteScalar();
+                b =await command.ExecuteScalarAsync();
                 return (b, true);
             }
             catch (Exception e)
             {
-                new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                await new LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
                 return (0, false);
             }
         }
 
-
-
         //reader
-        public (T, bool) Reader<T>(Func<DbDataReader, T> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public async Task<(T, bool)> ReaderAsync<T>( Func<DbDataReader, Task<T>> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
             CommandStart(commandText, parameters, commandType, transaction);
-            ConnectionOpen();
+            await ConnectionOpenAsync();
             try
             {
-                reader = command.ExecuteReader();
+                reader = await command.ExecuteReaderAsync();
             }
             catch (Exception e)
             {
-                new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                await new LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
                 return (default(T), false);
             }
-            var t = readMetod(reader);
+            var t = await readMetod(reader);
             return (t, true);
         }
 
 
-        public (List<T>, bool) Reader<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
+        public async Task<(List<T>, bool)> ReaderAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
         {
-            return Reader(GetList<T>, commandText, parameters, commandType, transaction);
+            
+            return await ReaderAsync(GetListAsync<T>, commandText, parameters, commandType, transaction);
         }
 
-        public (T, bool) ReaderFist<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
+        public async Task<(T, bool)> ReaderFistAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
         {
-            return Reader(GetFist<T>, commandText, parameters, commandType, transaction);
+            return await ReaderAsync(GetFistAsync<T>, commandText, parameters, commandType, transaction);
         }
 
 
-        protected List<T> GetList<T>(DbDataReader r) where T : class, new()
+        protected async Task<List<T>> GetListAsync<T>(DbDataReader r) where T : class, new()
         {
             List<T> list = new List<T>();
             if (r == null) return list;
             var fieldNames = Enumerable.Range(0, r.FieldCount).Select(i => r.GetName(i)).ToArray();
-            while (r.Read())
+            while (await r.ReadAsync())
             {
                 T t = new T();
                 foreach (var item in typeof(T).GetProperties())
@@ -150,7 +147,7 @@ namespace MicroORM
                 }
                 list.Add(t);
             }
-            if (!r.IsClosed) r.Close();
+            if (!r.IsClosed) await r.CloseAsync();
             return list;
         }
         bool isNullableEnum(Type t)
@@ -160,12 +157,12 @@ namespace MicroORM
                     return true;
             return false;
         }
-        protected T GetFist<T>(DbDataReader r) where T : class, new()
+        protected async Task<T> GetFistAsync<T>(DbDataReader r) where T : class, new()
         {
             if (r == null) return null;
             if (!r.HasRows) return null;
             T t = new T();
-            while (r.Read())
+            while (await r.ReadAsync())
             {
                 foreach (var item in typeof(T).GetProperties())
                 {
@@ -187,19 +184,19 @@ namespace MicroORM
                 }
                 break;
             }
-            if (!r.IsClosed) r.Close();
+            if (!r.IsClosed)await r.CloseAsync();
             return t;
         }
 
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (reader != null)
-                if (!reader.IsClosed) reader.Close();
-            command?.Dispose();
+                if (!reader.IsClosed) await reader.CloseAsync();
+            command?.DisposeAsync();
             if (connection == null) return;
-            if (connection.State != ConnectionState.Closed) connection.Close();
-            connection.Dispose();
+            if (connection.State != ConnectionState.Closed)await connection.CloseAsync();
+            await connection.DisposeAsync();
         }
 
     }

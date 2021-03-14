@@ -17,12 +17,18 @@ namespace MicroORM
             query = DBContext.CreateQuary();
         }
 
-        
-
 
         public virtual (int, bool) Insert(T t, DbTransaction transaction = null)
         {
-           return Insert<T>(t, transaction);
+            if (t == null) throw new ArgumentNullException();
+            return Insert<T>(t, transaction);
+        }
+        public virtual (int, bool) Insert(Action<T> item, DbTransaction transaction = null)
+        {
+            if (item == null) throw new ArgumentNullException();
+            T t = new T();
+            item(t);
+            return Insert<T>(t, transaction);
         }
         public virtual (int, bool) Insert<M>(M t, DbTransaction transaction = null) where M : class, new()
         {
@@ -51,6 +57,7 @@ namespace MicroORM
             return commander.NonQuery(cmtext);
         }
 
+
         public virtual (List<T>, bool) GetByColumName(string columName, object value, params string[] selectColumn)
         {
             return GetByColumName<T>(columName, value, selectColumn);
@@ -67,7 +74,7 @@ namespace MicroORM
 
         public virtual (T, bool) GetByColumNameFist(string columName, object value, params string[] selectColumn)
         {
-            return GetByColumNameFist<T>(columName, value,selectColumn);
+            return GetByColumNameFist<T>(columName, value, selectColumn);
         }
         public virtual (M, bool) GetByColumNameFist<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
@@ -129,8 +136,16 @@ namespace MicroORM
             using (CommanderBase commander = DBContext.CreateCommander())
                 return commander.NonQuery(cmtext, commander.SetParametrs(t));
         }
-
-
+        public virtual bool Update(Action<Dictionary<string,object>>items,int id)
+        {
+            if(items == null) throw new ArgumentNullException();
+            var d=new Dictionary<string, object>();
+            items(d);
+            string[] columns = new string[d.Count];
+            object[] values = new object[d.Count];
+            d.Keys.CopyTo(columns, 0);d.Values.CopyTo(values, 0);
+            return Update(columns, values, id);
+        }
         public virtual bool Update(string[] columns, object[] values, int id)
         {
             return Update<T>(columns, values, id);

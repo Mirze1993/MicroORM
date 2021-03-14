@@ -1,4 +1,4 @@
-﻿using CommonTool;
+﻿using MicroORM.Attributes;
 using MicroORM.Interface;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace MicroORM.SqlQueries
         public string Update<M>(string id, string[] colms = null) where M : class, new()
         {
             string columns = "";
-            if (colms.Length > 0)
+            if (colms?.Length > 0)
                 foreach (var item in colms)
                 {
                     if (item == "Id") continue;
