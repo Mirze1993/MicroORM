@@ -9,9 +9,10 @@
     <Product>MicroOrm</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>ORM</PackageTags>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
-    <FileVersion>1.0.0.1</FileVersion>
-    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <FileVersion>1.0.0.2</FileVersion>
+    <Version>1.0.2</Version>
+    <RepositoryUrl>https://github.com/Mirze1993/MicroORM</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

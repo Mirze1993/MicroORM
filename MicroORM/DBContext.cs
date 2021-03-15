@@ -23,16 +23,16 @@ namespace MicroORM
             return commander;
         }
 
-        public CommanderBase CreateCommanderAsync()
+        public CommanderBaseAsync CreateCommanderAsync()
         {
-            CommanderBase commander = null; ;
+            CommanderBaseAsync commander = null; ;
             switch (ORMConfig.DbType)
             {
                 case DbType.MSSQL:
-                    commander = new SqlCommander();
+                    commander = new SqlCommanderAsync();
                     break;
                 case DbType.Oracle:
-                    commander = new OracleCommander();
+                    commander = new OracleCommanderAsync();
                     break;
                 default:
                     break;
