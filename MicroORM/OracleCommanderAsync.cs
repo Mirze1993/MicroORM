@@ -32,6 +32,20 @@ namespace MicroORM
             p.Direction = System.Data.ParameterDirection.ReturnValue;
             return p;
         }
+
+        public override DbParameter SetParametr()
+        {
+            return new OracleParameter();
+        }
+
+        public override DbParameter SetOutputParametr(string paramName)
+        {
+            OracleParameter p = new OracleParameter();
+            p.ParameterName = paramName;
+            p.Direction = System.Data.ParameterDirection.ReturnValue;
+            return p;
+        }
+
         public OracleCommanderAsync()
         {
             connectionString = ORMConfig.ConnectionString;

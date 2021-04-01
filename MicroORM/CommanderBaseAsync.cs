@@ -23,9 +23,11 @@ namespace MicroORM
 
 
         public abstract DbParameter SetParametr(string paramName, object value);
+        public abstract DbParameter SetParametr();
 
 
         public abstract DbParameter SetOutputParametr();
+        public abstract DbParameter SetOutputParametr(string paramName);
 
         protected async Task ConnectionOpenAsync()
         {
