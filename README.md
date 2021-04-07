@@ -34,11 +34,11 @@ public class AppUser
        
     }</code></pre>
     
-    crud metod add to repository. 
+    //crud metod add to repository.     
+    //also add store proc
     
-    also add store proc
     
-    <pre class="language-csharp"><code>using (var commander = DBContext.CreateCommander())
+    using (var commander = DBContext.CreateCommander())
             {
                 var outParam = commander.SetOutputParametr();
                 var sqlparams = new List&lt;System.Data.Common.DbParameter&gt; {
@@ -50,7 +50,8 @@ public class AppUser
                     parameters: sqlparams);
                 if (outParam.Value == null) return 0;
                 return (int)outParam.Value;
-            }</code></pre>
+            }
+	   
 	    
 	    
     
