@@ -52,6 +52,12 @@ public class AppUser
                 return (int)outParam.Value;
             }
 	   
-	    
+	    startup.cs
+	     public void ConfigureServices(IServiceCollection services)
+        {
+            MicroORM.ORMConfig.ConnectionString = Config.GetConnectionString("DefaultConnection");
+            MicroORM.ORMConfig.DbType = MicroORM.DbType.MSSQL;
+            MicroORM.Logging.FileLoggerOptions.FolderPath = System.IO.Path.Combine(this.Environment.WebRootPath, "Log");
+}
 	    
     
