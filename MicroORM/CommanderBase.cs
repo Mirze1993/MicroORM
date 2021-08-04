@@ -39,13 +39,22 @@ namespace MicroORM
             return connection.BeginTransaction(IsolationLevel.Serializable);
         }
 
-        protected void CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        protected bool CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            command = connection.CreateCommand();
-            command.CommandText = commandText;
-            command.CommandType = commandType;
-            if (parameters != null) command.Parameters.AddRange(parameters.ToArray());
-            if (transaction != null) command.Transaction = transaction;
+            try
+            {
+                command = connection.CreateCommand();
+                command.CommandText = commandText;
+                command.CommandType = commandType;
+                if (parameters != null) command.Parameters.AddRange(parameters.ToArray());
+                if (transaction != null) command.Transaction = transaction;
+            }
+            catch(Exception e)
+            {
+                new Logging.LogWriteFile().WriteFile("CommandStart error", LogLevel.Error);
+                return false;
+            }
+            return true;
         }
 
 
@@ -53,7 +62,8 @@ namespace MicroORM
         public bool NonQuery(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            CommandStart(commandText, parameters, commandType, transaction);
+            if (!CommandStart(commandText, parameters, commandType, transaction))
+                return false;
             ConnectionOpen();
             bool b = false;
             try
@@ -73,7 +83,8 @@ namespace MicroORM
         public (object, bool) Scaller(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            CommandStart(commandText, parameters, commandType, transaction);
+            if (!CommandStart(commandText, parameters, commandType, transaction))
+                return (null,false);
             ConnectionOpen();
             object b = null;
             try
@@ -94,7 +105,8 @@ namespace MicroORM
         public (T, bool) Reader<T>(Func<DbDataReader, T> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            CommandStart(commandText, parameters, commandType, transaction);
+            if (!CommandStart(commandText, parameters, commandType, transaction))
+                return (default(T), false);
             ConnectionOpen();
             try
             {
