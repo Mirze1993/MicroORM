@@ -18,30 +18,30 @@ namespace MicroORM
         }
 
 
-        public virtual (int, bool) Insert(T t, DbTransaction transaction = null)
-        {
-            if (t == null) throw new ArgumentNullException();
+        public virtual Result<int> Insert(T t, DbTransaction transaction = null)
+        {           
             return Insert<T>(t, transaction);
         }
-        public virtual (int, bool) Insert(Action<T> item, DbTransaction transaction = null)
+        public virtual Result<int> Insert(Action<T> item, DbTransaction transaction = null)
         {
             if (item == null) throw new ArgumentNullException();
             T t = new T();
             item(t);
             return Insert<T>(t, transaction);
         }
-        public virtual (int, bool) Insert<M>(M t, DbTransaction transaction = null) where M : class, new()
+        public virtual Result<int> Insert<M>(M t, DbTransaction transaction = null) where M : class, new()
         {
+            if (t == null) throw new ArgumentNullException();
             string cmtext = query.Insert<M>();
-
             using (CommanderBase commander = DBContext.CreateCommander())
             {
 
                 var p = commander.SetParametrs(t);
-                var (id, b) = commander.Scaller(cmtext, parameters: p, transaction: transaction);
+                var result = commander.Scaller(cmtext, parameters: p, transaction: transaction);
 
-                if (b && id != null) return (Convert.ToInt32(id), b);
-                else return (0, b);
+                if (result.Success && result.t != null) 
+                    return new Result<int>().SuccessResult(Convert.ToInt32(t));
+                else return new Result<int>() {Message=result.Message,Success=false };
             }
         }
 
@@ -58,11 +58,15 @@ namespace MicroORM
         }
 
 
-        public virtual (List<T>, bool) GetByColumName(string columName, object value, params string[] selectColumn)
+        public virtual Result<List<T>> GetByColumName(string columName, object value, params string[] selectColumn)
         {
             return GetByColumName<T>(columName, value, selectColumn);
         }
-        public virtual (List<M>, bool) GetByColumName<M>(string columName, object value, params string[] selectColumn) where M : class, new()
+        public virtual Result<List<T>> GetByColumNameLeftJoin<Join>(string columName, object value) where Join : class, new()
+        {
+            return GetByColumNameLeftJoin<T, Join>(columName,value);
+        }
+        public virtual Result<List<M>> GetByColumName<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.GetByColumName<M>(columName, selectColumn);
             using (CommanderBase commander = DBContext.CreateCommander())
@@ -71,12 +75,26 @@ namespace MicroORM
             }
 
         }
+        public virtual Result<List<M>> GetByColumNameLeftJoin<M, Join>(string columName, object value) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.GetByColumNameLeftJoin<M, Join>(columName);
+            using (CommanderBase commander = DBContext.CreateCommander())
+            {
+                return commander.ReaderLeftJoin<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
+            }
 
-        public virtual (T, bool) GetByColumNameFist(string columName, object value, params string[] selectColumn)
+        }
+        
+
+        public virtual Result<T> GetByColumNameFist(string columName, object value, params string[] selectColumn)
         {
             return GetByColumNameFist<T>(columName, value, selectColumn);
         }
-        public virtual (M, bool) GetByColumNameFist<M>(string columName, object value, params string[] selectColumn) where M : class, new()
+        public virtual Result<T> GetByColumNameFistLeftJoin<Join>(string columName, object value) where Join : class, new()
+        {
+            return GetByColumNameFistLeftJoin<T, Join>(columName, value);
+        }
+        public virtual Result<M> GetByColumNameFist<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.GetByColumName<M>(columName, selectColumn);
             using (CommanderBase commander = DBContext.CreateCommander())
@@ -84,13 +102,26 @@ namespace MicroORM
                 return commander.ReaderFist<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
             }
         }
+        public virtual Result<M> GetByColumNameFistLeftJoin<M, Join>(string columName, object value) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.GetByColumNameLeftJoin<M, Join>(columName);
+            using (CommanderBase commander = DBContext.CreateCommander())
+            {
+                return commander.ReaderLeftJoinFist<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
+            }
 
+        }
+        
 
-        public virtual (List<T>, bool) GetWithCondition(string condition, params string[] selectColumn)
+        public virtual Result<List<T>> GetWithCondition(string condition, params string[] selectColumn)
         {
             return GetWithCondition<T>(condition, selectColumn);
         }
-        public virtual (List<M>, bool) GetWithCondition<M>(string condition, params string[] selectColumn) where M : class, new()
+        public virtual Result<List<T>> GetWithConditionLeftJoin<Join>(string condition) where Join : class, new()
+        {
+            return GetWithConditionLeftJoin<T,Join>(condition);
+        }
+        public virtual Result<List<M>> GetWithCondition<M>(string condition, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.Condition<M>(condition, selectColumn);
             using (CommanderBase commander = DBContext.CreateCommander())
@@ -99,12 +130,25 @@ namespace MicroORM
             }
 
         }
+        public virtual Result<List<M>> GetWithConditionLeftJoin<M,Join>(string condition) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.ConditionLeftJoin<M,Join>(condition);
+            using (CommanderBase commander = DBContext.CreateCommander())
+            {
+                return commander.ReaderLeftJoin<M,Join>(cmtext);
+            }
 
-        public virtual (T, bool) GetWithConditionFist(string condition, params string[] selectColumn)
+        }
+
+        public virtual Result<T> GetWithConditionFist(string condition, params string[] selectColumn)
         {
             return GetWithConditionFist<T>(condition, selectColumn);
         }
-        public virtual (M, bool) GetWithConditionFist<M>(string condition, params string[] selectColumn) where M : class, new()
+        public virtual Result<T> GetWithConditionFistLeftJoin<Join>(string condition) where Join : class, new()
+        {
+            return GetWithConditionFistLeftJoin<T, Join>(condition);
+        }
+        public virtual Result<M> GetWithConditionFist<M>(string condition, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.Condition<M>(condition, selectColumn);
             using (CommanderBase commander = DBContext.CreateCommander())
@@ -113,16 +157,36 @@ namespace MicroORM
             }
 
         }
+        public virtual Result<M> GetWithConditionFistLeftJoin<M,Join>(string condition) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.ConditionLeftJoin<M,Join>(condition);
+            using (CommanderBase commander = DBContext.CreateCommander())
+            {
+                return commander.ReaderLeftJoinFist<M,Join>(cmtext);
+            }
 
-        public virtual (List<T>, bool) GetAll(params string[] column)
+        }
+
+
+        public virtual Result<List<T>> GetAll(params string[] column)
         {
             return GetAll<T>(column);
         }
-        public virtual (List<M>, bool) GetAll<M>(params string[] column) where M : class, new()
+        public virtual Result<List<T>> GetAllLeftJoin<Join>(params string[] column) where Join : class, new()
+        {
+            return GetAllLeftJoin<T,Join>();
+        }
+        public virtual Result<List<M>> GetAll<M>(params string[] column) where M : class, new()
         {
             string cmtext = query.GetAll<M>(column);
             using (CommanderBase commander = DBContext.CreateCommander())
                 return commander.Reader<M>(cmtext);
+        }
+        public virtual Result<List<M>> GetAllLeftJoin<M,Join>() where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.GetAllLeftJoin<M,Join>();
+            using (CommanderBase commander = DBContext.CreateCommander())
+                return commander.ReaderLeftJoin<M,Join>(cmtext);
         }
 
 

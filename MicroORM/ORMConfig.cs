@@ -10,8 +10,7 @@ namespace MicroORM
         public static string ConnectionString="";
 
         public static DbType DbType;
-
-        
+        public static AppDomain domain;
     }
 
     public enum DbType

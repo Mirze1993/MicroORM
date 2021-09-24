@@ -19,29 +19,30 @@ namespace MicroORM
         }
 
 
-        public virtual async Task<(int, bool)> InsertAsync(T t, DbTransaction transaction = null)
+        public virtual async Task<Result<int>> InsertAsync(T t, DbTransaction transaction = null)
         {
-            if (t == null) throw new ArgumentNullException();
             return await InsertAsync<T>(t, transaction);
         }
-        public virtual async Task<(int, bool)> InsertAsync(Action<T> item, DbTransaction transaction = null)
+        public virtual async Task<Result<int>> InsertAsync(Action<T> item, DbTransaction transaction = null)
         {
             if (item == null) throw new ArgumentNullException();
             T t = new T();
             item(t);
             return await InsertAsync<T>(t, transaction);
         }
-        public virtual async Task<(int, bool)> InsertAsync<M>(M t, DbTransaction transaction = null) where M : class, new()
+        public virtual async Task< Result<int>> InsertAsync<M>(M t, DbTransaction transaction = null) where M : class, new()
         {
+            if (t == null) throw new ArgumentNullException();
             string cmtext = query.Insert<M>();
-
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using (var commander = DBContext.CreateCommanderAsync())
             {
-                var p = commander.SetParametrs(t);
-                var (id, b) = await commander.ScallerAsync(cmtext, parameters: p, transaction: transaction);
 
-                if (b && id != null) return (Convert.ToInt32(id), b);
-                else return (0, b);
+                var p = commander.SetParametrs(t);
+                var result =await commander.ScallerAsync(cmtext, parameters: p, transaction: transaction);
+
+                if (result.Success && result.t != null)
+                    return new Result<int>().SuccessResult(Convert.ToInt32(t));
+                else return new Result<int>() { Message = result.Message, Success = false };
             }
         }
 
@@ -52,77 +53,143 @@ namespace MicroORM
         }
         public virtual async Task<bool> DeletAsync<M>(int id) where M : class, new()
         {
-            string cmtext = query.Delete<M>(id.ToString());
-            await using CommanderBaseAsync commander = DBContext.CreateCommanderAsync();
+        
+
+           string cmtext = query.Delete<M>(id.ToString());
+           await using var commander = DBContext.CreateCommanderAsync();
             return await commander.NonQueryAsync(cmtext);
         }
 
 
-        public virtual async Task<(List<T>, bool)> GetByColumNameAsync(string columName, object value, params string[] selectColumn)
+        public virtual async Task<Result<List<T>>> GetByColumNameAsync(string columName, object value, params string[] selectColumn)
         {
             return await GetByColumNameAsync<T>(columName, value, selectColumn);
         }
-        public virtual async Task<(List<M>, bool)> GetByColumNameAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new()
+        public virtual async Task<Result<List<T>>> GetByColumNameLeftJoinAsync<Join>(string columName, object value) where Join : class, new()
+        {
+            return await GetByColumNameLeftJoinAsync<T, Join>(columName, value);
+        }
+        public virtual async Task<Result<List<M>>> GetByColumNameAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.GetByColumName<M>(columName, selectColumn);
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using (var commander = DBContext.CreateCommanderAsync())
             {
                 return await commander.ReaderAsync<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
             }
 
         }
+        public virtual async Task< Result<List<M>>> GetByColumNameLeftJoinAsync<M, Join>(string columName, object value) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.GetByColumNameLeftJoin<M, Join>(columName);
+            await using (var commander = DBContext.CreateCommanderAsync())
+            {
+                return await commander.ReaderLeftJoinAsync<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
+            }
 
-        public virtual async Task<(T, bool)> GetByColumNameFistAsync(string columName, object value, params string[] selectColumn)
+        }
+
+
+        public virtual async Task<Result<T>> GetByColumNameFistAsync(string columName, object value, params string[] selectColumn)
         {
             return await GetByColumNameFistAsync<T>(columName, value, selectColumn);
         }
-        public virtual async Task<(M, bool)> GetByColumNameFistAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new()
+        public virtual async Task<Result<T>> GetByColumNameFistLeftJoinAsync<Join>(string columName, object value) where Join : class, new()
+        {
+            return await GetByColumNameFistLeftJoinAsync<T, Join>(columName, value);
+        }
+        public virtual async Task<Result<M>> GetByColumNameFistAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.GetByColumName<M>(columName, selectColumn);
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using (var commander = DBContext.CreateCommanderAsync())
             {
                 return await commander.ReaderFistAsync<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
             }
         }
+        public virtual async Task<Result<M>> GetByColumNameFistLeftJoinAsync<M, Join>(string columName, object value) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.GetByColumNameLeftJoin<M, Join>(columName);
+            await using (var commander = DBContext.CreateCommanderAsync())
+            {
+                return await commander.ReaderLeftJoinFistAsync<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
+            }
+
+        }
 
 
-        public virtual async Task<(List<T>, bool)> GetWithConditionAsync(string condition, params string[] selectColumn)
+        public virtual async Task<Result<List<T>>> GetWithConditionAsync(string condition, params string[] selectColumn)
         {
             return await GetWithConditionAsync<T>(condition, selectColumn);
         }
-        public virtual async Task<(List<M>, bool)> GetWithConditionAsync<M>(string condition, params string[] selectColumn) where M : class, new()
+        public virtual async Task<Result<List<T>>> GetWithConditionLeftJoinAsync<Join>(string condition) where Join : class, new()
+        {
+            return await GetWithConditionLeftJoinAsync<T, Join>(condition);
+        }
+        public virtual async Task<Result<List<M>>> GetWithConditionAsync<M>(string condition, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.Condition<M>(condition, selectColumn);
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using(var commander = DBContext.CreateCommanderAsync())
             {
                 return await commander.ReaderAsync<M>(cmtext);
             }
 
         }
+        public virtual async Task<Result<List<M>>> GetWithConditionLeftJoinAsync<M, Join>(string condition) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.ConditionLeftJoin<M, Join>(condition);
+            await using (var commander = DBContext.CreateCommanderAsync())
+            {
+                return await commander.ReaderLeftJoinAsync<M, Join>(cmtext);
+            }
 
-        public virtual async Task<(T, bool)> GetWithConditionFistAsync(string condition, params string[] selectColumn)
+        }
+
+        public virtual async Task<Result<T>> GetWithConditionFistAsync(string condition, params string[] selectColumn)
         {
             return await GetWithConditionFistAsync<T>(condition, selectColumn);
         }
-        public virtual async Task<(M, bool)> GetWithConditionFistAsync<M>(string condition, params string[] selectColumn) where M : class, new()
+        public virtual async Task<Result<T>> GetWithConditionFistLeftJoinAsync<Join>(string condition) where Join : class, new()
+        {
+            return await GetWithConditionFistLeftJoinAsync<T, Join>(condition);
+        }
+        public virtual async Task<Result<M>> GetWithConditionFistAsync<M>(string condition, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.Condition<M>(condition, selectColumn);
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using(var commander = DBContext.CreateCommanderAsync())
             {
                 return await commander.ReaderFistAsync<M>(cmtext);
             }
 
         }
+        public virtual async Task<Result<M>> GetWithConditionFistLeftJoinAsync<M, Join>(string condition) where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.ConditionLeftJoin<M, Join>(condition);
+            await using(var commander = DBContext.CreateCommanderAsync())
+            {
+                return await commander.ReaderLeftJoinFistAsync<M, Join>(cmtext);
+            }
 
-        public virtual async Task<(List<T>, bool)> GetAllAsync(params string[] column)
+        }
+
+
+        public virtual async Task<Result<List<T>>> GetAllAsync(params string[] column)
         {
             return await GetAllAsync<T>(column);
         }
-        public virtual async Task<(List<M>, bool)> GetAllAsync<M>(params string[] column) where M : class, new()
+        public virtual async Task<Result<List<T>>> GetAllLeftJoinAsync<Join>(params string[] column) where Join : class, new()
+        {
+            return await GetAllLeftJoinAsync<T, Join>();
+        }
+        public virtual async Task<Result<List<M>>> GetAllAsync<M>(params string[] column) where M : class, new()
         {
             string cmtext = query.GetAll<M>(column);
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using (var commander = DBContext.CreateCommanderAsync())
                 return await commander.ReaderAsync<M>(cmtext);
+        }
+        public virtual async Task<Result<List<M>>> GetAllLeftJoinAsync<M, Join>() where M : class, new() where Join : class, new()
+        {
+            string cmtext = query.GetAllLeftJoin<M, Join>();
+            await using (var commander = DBContext.CreateCommanderAsync())
+                return await commander.ReaderLeftJoinAsync<M, Join>(cmtext);
         }
 
 
@@ -133,7 +200,7 @@ namespace MicroORM
         public virtual async Task<bool> UpdateAsync<M>(M t, int id) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString());
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using (var commander = DBContext.CreateCommanderAsync())
                 return await commander.NonQueryAsync(cmtext, commander.SetParametrs(t));
         }
         public virtual async Task<bool> UpdateAsync(Action<Dictionary<string, object>> items, int id)
@@ -150,11 +217,11 @@ namespace MicroORM
         {
             return await UpdateAsync<T>(columns, values, id);
         }
-        public virtual async Task<bool> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new()
+        public virtual async Task< bool> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString(), columns);
             var p = new List<DbParameter>();
-            await using (CommanderBaseAsync commander = DBContext.CreateCommanderAsync())
+            await using (var commander = DBContext.CreateCommanderAsync())
             {
                 for (int i = 0; i < columns.Length; i++)
                 {

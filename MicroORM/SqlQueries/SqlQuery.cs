@@ -1,7 +1,9 @@
 ﻿using MicroORM.Attributes;
 using MicroORM.Interface;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MicroORM.SqlQueries
 {
@@ -23,7 +25,9 @@ namespace MicroORM.SqlQueries
             else
                 foreach (var item in typeof(M).GetProperties())
                 {
-                    var t = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
+                    if (item.PropertyType.GetInterfaces().Contains(typeof(IEnumerable<>)))
+                        continue;
+                    var t = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));  
                     if (t != null) if (t.Map != DbMap.Maping) continue;
                     if (item.Name == "Id") continue;
                     columns += $"{item.Name}=@{item.Name} ,";
@@ -41,6 +45,9 @@ namespace MicroORM.SqlQueries
             string values = "";
             foreach (var item in typeof(M).GetProperties())
             {
+                if (item.PropertyType.GetInterfaces().Contains(typeof(IEnumerable<>)))
+                    continue;
+
                 var t = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
                 if (t != null) if (t.Map != DbMap.Maping) continue;
 
@@ -76,39 +83,43 @@ namespace MicroORM.SqlQueries
             return query;
         }    
         public string GetByColumName<M>(string columName,params string[] selectColumn) where M : class, new()
-        {
-            string query = "";
-            if (selectColumn?.Length > 0)
-            {
-                string clm = "";
-                foreach (var item in selectColumn)
-                {
-                    clm += item + ",";
-                }
-                clm = clm.Remove(clm.Length - 1);
-                query = $"SELECT {clm}  FROM {typeof(M).Name}";
-            }
-            else query = $"SELECT *  FROM {typeof(M).Name}";
-            query += $" WHERE {columName} =@{columName}";
-            return query;
+        {            
+            var q=GetAll<M>(selectColumn);
+
+            q += $" WHERE {columName} =@{columName}";
+            return q;
         }
 
         public string Condition<M>(string condition, params string[] selectColumn) where M : class, new()
         {
-            string query = "";
-            if (selectColumn?.Length > 0)
-            {
-                string clm = "";
-                foreach (var item in selectColumn)
-                {
-                    clm += item + ",";
-                }
-                clm = clm.Remove(clm.Length - 1);
-                query = $"SELECT {clm}  FROM {typeof(M).Name}";
-            }
-            else query = $"SELECT *  FROM {typeof(M).Name}";
+            var query = GetAll<M>(selectColumn);
             query += $" WHERE {condition}";
             return query;
+        }
+
+
+        public string GetAllLeftJoin<M,J>() where M : class, new() where J : class, new()
+        {
+            var q=GetAll<M>();
+            q += $" m left join {typeof(J).Name} j on j.{typeof(M).Name}Id=m.Id";
+            return q;
+        }
+
+       
+
+        public string GetByColumNameLeftJoin<M, J>(string columName) where M : class, new() where J : class, new()
+        {
+            var q = GetAllLeftJoin<M, J>();
+            q += $" WHERE m.{columName} =@{columName}";
+            return q;
+        }
+
+
+        public string ConditionLeftJoin<M, J>(string condition) where M : class, new() where J : class, new()
+        {
+            var q = GetAllLeftJoin<M, J>();
+            q += $" WHERE {condition}";
+            return q;
         }
 
         #region commet

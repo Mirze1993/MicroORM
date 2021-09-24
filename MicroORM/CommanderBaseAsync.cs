@@ -16,15 +16,11 @@ namespace MicroORM
         public DbDataReader reader;
         protected DbCommand command;
 
-
         protected string connectionString;
-
         public abstract List<DbParameter> SetParametrs<T>(T t);
-
 
         public abstract DbParameter SetParametr(string paramName, object value);
         public abstract DbParameter SetParametr();
-
 
         public abstract DbParameter SetOutputParametr();
         public abstract DbParameter SetOutputParametr(string paramName);
@@ -33,28 +29,34 @@ namespace MicroORM
         {
             if (connection.State != ConnectionState.Open)await connection.OpenAsync();
         }
-
-
         public async Task<DbTransaction> TransactionStartAsync()
         {
             return await connection.BeginTransactionAsync(IsolationLevel.Serializable);
         }
 
-        protected void CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        protected bool CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            command = connection.CreateCommand();
-            command.CommandText = commandText;
-            command.CommandType = commandType;
-            if (parameters != null) command.Parameters.AddRange(parameters.ToArray());
-            if (transaction != null) command.Transaction = transaction;
+            try
+            {
+                command = connection.CreateCommand();
+                command.CommandText = commandText;
+                command.CommandType = commandType;
+                if (parameters != null) command.Parameters.AddRange(parameters.ToArray());
+                if (transaction != null) command.Transaction = transaction;
+            }
+            catch (Exception e)
+            {
+                new Logging.LogWriteFile().WriteFile($"CommandStart error {e.Message}", LogLevel.Error);
+                return false;
+            }
+            return true;
         }
-
-
 
         public async Task<bool> NonQueryAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            CommandStart(commandText, parameters, commandType, transaction);
+            if (!CommandStart(commandText, parameters, commandType, transaction))
+                return await Task.FromResult( false);
             await ConnectionOpenAsync();
             bool b = false;
             try
@@ -63,61 +65,66 @@ namespace MicroORM
             }
             catch (Exception e)
             {
-                await new LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
+                await new Logging.LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
             }
-            return b;
+            return await Task.FromResult(b); ;
         }
-
-
-        public async Task<(object, bool)> ScallerAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public async Task<Result<object>> ScallerAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            CommandStart(commandText, parameters, commandType, transaction);
+            if (!CommandStart(commandText, parameters, commandType, transaction))
+                return new Result<object> { Success = false, Message = "do not CommandStart" };
             await ConnectionOpenAsync();
             object b = null;
             try
             {
                 b =await command.ExecuteScalarAsync();
-                return (b, true);
+                return new Result<object> { t = b };
             }
             catch (Exception e)
             {
-                await new LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
-                return (0, false);
+                await new Logging.LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
+                return new Result<object> { Success = false, Message = e.Message, t = 0 };
             }
         }
 
         //reader
-        public async Task<(T, bool)> ReaderAsync<T>( Func<DbDataReader, Task<T>> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public async Task< Result<T>> ReaderAsync<T>(Func<DbDataReader, Task<T>> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            CommandStart(commandText, parameters, commandType, transaction);
+            if (!CommandStart(commandText, parameters, commandType, transaction))
+                return new Result<T> { Success = false, Message = "do not CommandStart" };
             await ConnectionOpenAsync();
+            T t = default(T);
             try
             {
-                reader = await command.ExecuteReaderAsync();
+                reader =await command.ExecuteReaderAsync();
+                t =await readMetod(reader);
             }
             catch (Exception e)
             {
-                await new LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
-                return (default(T), false);
+                await new Logging.LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
+                return new Result<T> { Success = false, Message = e.Message };
             }
-            var t = await readMetod(reader);
-            return (t, true);
+
+            return new Result<T>().SuccessResult(t);
         }
-
-
-        public async Task<(List<T>, bool)> ReaderAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
+        public async Task< Result<List<T>>> ReaderAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
         {
-            
             return await ReaderAsync(GetListAsync<T>, commandText, parameters, commandType, transaction);
         }
-
-        public async Task<(T, bool)> ReaderFistAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
+        public async Task<Result<T>> ReaderFistAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
         {
             return await ReaderAsync(GetFistAsync<T>, commandText, parameters, commandType, transaction);
         }
-
+        public async Task<Result<List<T>>> ReaderLeftJoinAsync<T, M>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new() where M : class, new()
+        {
+            return await ReaderAsync( GetListLeftJoinAsync<T, M>, commandText, parameters, commandType, transaction);
+        }
+        public async Task<Result<T>> ReaderLeftJoinFistAsync<T, M>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new() where M : class, new()
+        {
+            return await ReaderAsync(GetFistLeftJoinAsync<T, M>, commandText, parameters, commandType, transaction);
+        }
 
         protected async Task<List<T>> GetListAsync<T>(DbDataReader r) where T : class, new()
         {
@@ -126,31 +133,111 @@ namespace MicroORM
             var fieldNames = Enumerable.Range(0, r.FieldCount).Select(i => r.GetName(i)).ToArray();
             while (await r.ReadAsync())
             {
-                T t = new T();
-                foreach (var item in typeof(T).GetProperties())
-                {
-                    if (!fieldNames.Contains(item.Name)) continue;
-                    var attribute = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
-                    if (attribute != null) if (attribute.Map == DbMap.noMaping) continue;
-                    try
-                    {
-                        var value = r[item.Name];
-                        if (value == null) continue;
-                        if (item.PropertyType.IsEnum)
-                            item.SetValue(t, Enum.Parse(item.PropertyType, value.ToString()), null);
-
-                        else if (isNullableEnum(item.PropertyType))
-                        {
-                            item.SetValue(t, Enum.Parse(Nullable.GetUnderlyingType(item.PropertyType), value.ToString()));
-                        }
-                        else item.SetValue(t, value);
-                    }
-                    catch { }
-                }
+                var t = GetValues<T>(r);
                 list.Add(t);
             }
-            if (!r.IsClosed) await r.CloseAsync();
+            if (!r.IsClosed)await r.CloseAsync();
             return list;
+        }
+        protected async Task<List<T>> GetListLeftJoinAsync<T, M>(DbDataReader r) where T : class, new() where M : class, new()
+        {
+            Dictionary<int, T> d = new Dictionary<int, T>();
+            if (r == null) return new List<T>();
+
+            while (await r.ReadAsync())
+            {
+                T t = null;
+                int id;
+                bool b = false; ;
+                if (int.TryParse(r["Id"].ToString(), out id))
+                    b = d.TryGetValue(id, out t);
+                if (t == null)
+                {
+                    t = GetValues<T>(r);
+                }
+                var m = GetValues<M>(r);
+                typeof(T).GetMethod("Join").Invoke(t, new[] { m });
+                if (!b) d.Add(id, t);
+            }
+            if (!r.IsClosed)await r.CloseAsync();
+            return d.Values.ToList();
+        }
+
+        protected async Task<T> GetFistAsync<T>(DbDataReader r) where T : class, new()
+        {
+            if (r == null) return null;
+            if (!r.HasRows) return null;
+            T t = new T();
+            while (await r.ReadAsync())
+            {
+                t = GetValues<T>(r);
+                break;
+            }
+            if (!r.IsClosed)await r.CloseAsync();
+            return t;
+        }
+        protected async Task<T> GetFistLeftJoinAsync<T, M>(DbDataReader r) where T : class, new() where M : class, new()
+        {
+            if (r == null) return null;
+            if (!r.HasRows) return null;
+
+            Dictionary<int, T> d = new Dictionary<int, T>();
+            T result = null;
+            while (await r.ReadAsync())
+            {
+                try
+                {
+                    T t = null;
+                    int id;
+                    bool b = false; ;
+                    if (int.TryParse(r["Id"].ToString(), out id))
+                        b = d.TryGetValue(id, out t);
+                    if (t == null)
+                    {
+                        t = GetValues<T>(r);
+                    }
+                    var m = GetValues<M>(r);
+                    typeof(T).GetMethod("Join").Invoke(t, new[] { m });
+                    if (!b) d.Add(id, t);
+                    if (d.Count > 1)
+                    {
+                        result = d.Values.ToList().FirstOrDefault();
+                        break;
+                    }
+                }catch(Exception e)
+                {
+                    await new LogWriteFile().WriteFileAsync("Metod GetFistLeftJoin:" + e.Message, LogLevel.Error);
+                }
+            }
+            if (!r.IsClosed)await r.CloseAsync();
+            return d.Values?.ToList().FirstOrDefault();
+        }
+
+        public T GetValues<T>(DbDataReader r) where T : class, new()
+        {
+            T t = new T();
+            foreach (var item in typeof(T).GetProperties())
+            {
+                if (item.PropertyType.GetInterfaces().Contains(typeof(IEnumerable<>)))
+                    continue;
+                var attribute = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
+                if (attribute != null) if (attribute.Map == DbMap.noMaping) continue;
+                try
+                {
+                    var value = r[item.Name];
+                    if (value == null) continue;
+                    if (item.PropertyType.IsEnum)
+                        item.SetValue(t, Enum.Parse(item.PropertyType, value.ToString()), null);
+
+                    else if (isNullableEnum(item.PropertyType))
+                    {
+                        item.SetValue(t, Enum.Parse(Nullable.GetUnderlyingType(item.PropertyType), value.ToString()));
+                    }
+                    else item.SetValue(t, value);
+                }
+                catch { }
+            }
+            return t;
         }
         bool isNullableEnum(Type t)
         {
@@ -159,37 +246,6 @@ namespace MicroORM
                     return true;
             return false;
         }
-        protected async Task<T> GetFistAsync<T>(DbDataReader r) where T : class, new()
-        {
-            if (r == null) return null;
-            if (!r.HasRows) return null;
-            T t = new T();
-            while (await r.ReadAsync())
-            {
-                foreach (var item in typeof(T).GetProperties())
-                {
-                    var attribute = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
-                    if (attribute != null) if (attribute.Map == DbMap.noMaping) continue;
-                    try
-                    {
-                        var value = r[item.Name];
-                        if (item.PropertyType.IsEnum)
-                            item.SetValue(t, Enum.Parse(item.PropertyType, value.ToString()), null);
-
-                        else if (isNullableEnum(item.PropertyType))
-                        {
-                            item.SetValue(t, Enum.Parse(Nullable.GetUnderlyingType(item.PropertyType), value.ToString()));
-                        }
-                        else item.SetValue(t, value);
-                    }
-                    catch { }
-                }
-                break;
-            }
-            if (!r.IsClosed)await r.CloseAsync();
-            return t;
-        }
-
 
         public async ValueTask DisposeAsync()
         {
@@ -197,9 +253,8 @@ namespace MicroORM
                 if (!reader.IsClosed) await reader.CloseAsync();
             command?.DisposeAsync();
             if (connection == null) return;
-            if (connection.State != ConnectionState.Closed)await connection.CloseAsync();
+            if (connection.State != ConnectionState.Closed) await connection.CloseAsync();
             await connection.DisposeAsync();
         }
-
     }
 }
