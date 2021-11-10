@@ -13,8 +13,8 @@ namespace MicroORM.Interface
         Task<Result<int>> InsertAsync<M>(M t, DbTransaction transaction = null) where M : class, new();
 
 
-        Task<bool> DeletAsync(int id);
-        Task<bool> DeletAsync<M>(int id) where M : class, new();
+        Task<Result> DeletAsync(int id);
+        Task<Result> DeletAsync<M>(int id) where M : class, new();
 
         Task<Result<List<T>>> GetByColumNameAsync(string columName, object value, params string[] selectColumn);
         Task<Result<List<T>>> GetByColumNameLeftJoinAsync<Join>(string columName, object value) where Join : class, new();
@@ -41,10 +41,10 @@ namespace MicroORM.Interface
         Task<Result<List<M>>> GetAllAsync<M>(params string[] column) where M : class, new();
         Task<Result<List<M>>> GetAllLeftJoinAsync<M, Join>() where M : class, new() where Join : class, new();
 
-        Task<bool> UpdateAsync(T t, int id);
-        Task<bool> UpdateAsync<M>(M t, int id) where M : class, new();
-        Task<bool> UpdateAsync(Action<Dictionary<string, object>> items, int id);
-        Task<bool> UpdateAsync(string[] columns, object[] values, int id);
-        Task<bool> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new();
+        Task<Result> UpdateAsync(T t, int id);
+        Task<Result> UpdateAsync<M>(M t, int id) where M : class, new();
+        Task<Result> UpdateAsync(Action<Dictionary<string, object>> items, int id);
+        Task<Result> UpdateAsync(string[] columns, object[] values, int id);
+        Task<Result> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new();
     }
 }

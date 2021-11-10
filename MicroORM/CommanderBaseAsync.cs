@@ -34,7 +34,7 @@ namespace MicroORM
             return await connection.BeginTransactionAsync(IsolationLevel.Serializable);
         }
 
-        protected bool CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        protected Result CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
             try
             {
@@ -46,17 +46,18 @@ namespace MicroORM
             }
             catch (Exception e)
             {
-                new Logging.LogWriteFile().WriteFile($"CommandStart error {e.Message}", LogLevel.Error);
-                return false;
+                 new Logging.LogWriteFile().WriteFile($"CommandStart error {e.Message}", LogLevel.Error);
+                return new Result(false, e.Message);
             }
-            return true;
+            return new Result();
         }
 
-        public async Task<bool> NonQueryAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public async Task<Result> NonQueryAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            if (!CommandStart(commandText, parameters, commandType, transaction))
-                return await Task.FromResult( false);
+            var cs = CommandStart(commandText, parameters, commandType, transaction);
+            if (!cs.Success)
+                return await Task.FromResult(cs);
             await ConnectionOpenAsync();
             bool b = false;
             try
@@ -65,26 +66,28 @@ namespace MicroORM
             }
             catch (Exception e)
             {
-                await new Logging.LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
+                new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                return new Result(false, e.Message);
             }
-            return await Task.FromResult(b); ;
+            return new Result();            
         }
         public async Task<Result<object>> ScallerAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            if (!CommandStart(commandText, parameters, commandType, transaction))
-                return new Result<object> { Success = false, Message = "do not CommandStart" };
+            var cs = CommandStart(commandText, parameters, commandType, transaction);
+            if (!cs.Success)
+                return new Result<object> { Success = false, Message = cs.Message };
             await ConnectionOpenAsync();
             object b = null;
             try
             {
                 b =await command.ExecuteScalarAsync();
-                return new Result<object> { t = b };
+                return new Result<object> { Value = b };
             }
             catch (Exception e)
             {
                 await new Logging.LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
-                return new Result<object> { Success = false, Message = e.Message, t = 0 };
+                return new Result<object> { Success = false, Message = e.Message, Value = 0 };
             }
         }
 
@@ -92,8 +95,9 @@ namespace MicroORM
         public async Task< Result<T>> ReaderAsync<T>(Func<DbDataReader, Task<T>> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            if (!CommandStart(commandText, parameters, commandType, transaction))
-                return new Result<T> { Success = false, Message = "do not CommandStart" };
+            var cs = CommandStart(commandText, parameters, commandType, transaction);
+            if (!cs.Success)
+                return new Result<T> { Success = false, Message = cs.Message };
             await ConnectionOpenAsync();
             T t = default(T);
             try

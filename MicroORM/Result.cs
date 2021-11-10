@@ -6,13 +6,30 @@ namespace MicroORM
 {
     public class Result<T> 
     {
-        public T t { get; set; }
+        public T Value { get; set; } = default;
         public bool Success { get; set; } = true;
         public string Message { get; set; }
         public Result<T> SuccessResult(T result)
         {
-            t = result;
+            Value = result;
             return this;
+        }
+
+       
+    }
+    public class Result
+    {
+        public bool Success { get; set; } = true;
+        public string Message { get; set; }
+
+        public Result()
+        {
+
+        }
+        public Result(bool success, string message)
+        {
+            Success = success;
+            Message = message;
         }
     }
 }

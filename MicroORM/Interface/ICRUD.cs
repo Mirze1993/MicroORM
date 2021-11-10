@@ -11,8 +11,8 @@ namespace MicroORM.Interface
         Result<int> Insert<M>(M t, DbTransaction transaction = null) where M : class, new();
 
 
-        bool Delet(int id);
-        bool Delet<M>(int id) where M : class, new();
+        Result Delet(int id);
+        Result Delet<M>(int id) where M : class, new();
 
         Result<List<T>> GetByColumName(string columName, object value, params string[] selectColumn);
         Result<List<T>> GetByColumNameLeftJoin<Join>(string columName, object value) where Join : class, new();
@@ -39,11 +39,11 @@ namespace MicroORM.Interface
         Result<List<M>> GetAll<M>(params string[] column) where M : class, new();
         Result<List<M>> GetAllLeftJoin<M, Join>() where M : class, new() where Join : class, new();
 
-        bool Update(T t, int id);
-        bool Update<M>(M t, int id) where M : class, new();
-        bool Update(Action<Dictionary<string, object>> items, int id);
-        bool Update(string[] columns, object[] values, int id);
-        bool Update<M>(string[] columns, object[] values, int id) where M : class, new();
+        Result Update(T t, int id);
+        Result Update<M>(M t, int id) where M : class, new();
+        Result Update(Action<Dictionary<string, object>> items, int id);
+        Result Update(string[] columns, object[] values, int id);
+        Result Update<M>(string[] columns, object[] values, int id) where M : class, new();
 
 
 

@@ -19,7 +19,7 @@ namespace MicroORM.Logging
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         public async Task WriteFileAsync(string text, LogLevel logLevel)
         {
-            if (!IsEnabled(logLevel)) return;
+            if (!IsEnabled(logLevel) || !FileLoggerOptions.IsFileLog) return;
             string logText = $"{DateTime.Now.ToString("u").PadRight(24)}  {logLevel.ToString().PadRight(12)}   {text}";
             string path = Path.Combine(FileLoggerOptions.FolderPath, DateTime.Now.ToString("yyyy-MM-dd-async")) + ".txt";
             await _semaphore.WaitAsync();
@@ -49,7 +49,7 @@ namespace MicroORM.Logging
 
         public void WriteFile(string text, LogLevel logLevel)
         {
-            if (!IsEnabled(logLevel)) return;
+            if (!IsEnabled(logLevel)|| !FileLoggerOptions.IsFileLog) return;
             string logText = $"{logLevel.ToString().PadRight(12)} {DateTime.Now.ToString("u").PadRight(24)}   {text}";
             string path = Path.Combine(FileLoggerOptions.FolderPath, DateTime.Now.ToString("yyyy-MM-dd")) + ".txt";
             lock (l)

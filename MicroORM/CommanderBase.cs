@@ -40,7 +40,7 @@ namespace MicroORM
             return connection.BeginTransaction(IsolationLevel.Serializable);
         }
 
-        protected bool CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        protected Result CommandStart(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
             try
             {
@@ -53,16 +53,16 @@ namespace MicroORM
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile($"CommandStart error {e.Message}", LogLevel.Error);
-                return false;
+                return new Result(false,e.Message);
             }
-            return true;
+            return new Result();
         }
 
-        public bool NonQuery(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
+        public Result NonQuery(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-
-            if (!CommandStart(commandText, parameters, commandType, transaction))
-                return false;
+            var cs = CommandStart(commandText, parameters, commandType, transaction);
+            if (!cs.Success)
+                return cs;
             ConnectionOpen();
             bool b = false;
             try
@@ -72,27 +72,28 @@ namespace MicroORM
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                return new Result(false, e.Message);
             }
-            return b;
+            return  new Result();
         }
 
 
         public Result<object> Scaller(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-
-            if (!CommandStart(commandText, parameters, commandType, transaction))
-                return new Result<object>{Success=false,Message= "do not CommandStart" };
+            var cs = CommandStart(commandText, parameters, commandType, transaction);
+            if (!cs.Success)
+                return new Result<object>{Success=false,Message= cs.Message };
             ConnectionOpen();
             object b = null;
             try
             {
                 b = command.ExecuteScalar();
-                return new Result<object> {t=b };
+                return new Result<object> {Value=b };
             }
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
-                return new Result<object> { Success = false, Message = e.Message,t=0 };
+                return new Result<object> { Success = false, Message = e.Message,Value=0 };
             }
         }
 
@@ -101,9 +102,9 @@ namespace MicroORM
         //reader
         public Result<T> Reader<T>(Func<DbDataReader, T> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-
-            if (!CommandStart(commandText, parameters, commandType, transaction))
-                return new Result<T> { Success = false, Message = "do not CommandStart" };
+            var cs = CommandStart(commandText, parameters, commandType, transaction);
+            if (!cs.Success)
+                return new Result<T> { Success = false, Message = cs.Message };
             ConnectionOpen();
             T t = default(T);
             try

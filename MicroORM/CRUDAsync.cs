@@ -40,18 +40,18 @@ namespace MicroORM
                 var p = commander.SetParametrs(t);
                 var result =await commander.ScallerAsync(cmtext, parameters: p, transaction: transaction);
 
-                if (result.Success && result.t != null)
-                    return new Result<int>().SuccessResult(Convert.ToInt32(t));
+                if (result.Success && result.Value != null)
+                    return new Result<int>().SuccessResult(Convert.ToInt32(result.Value));
                 else return new Result<int>() { Message = result.Message, Success = false };
             }
         }
 
 
-        public virtual async Task<bool> DeletAsync(int id)
+        public virtual async Task<Result> DeletAsync(int id)
         {
             return await DeletAsync<T>(id);
         }
-        public virtual async Task<bool> DeletAsync<M>(int id) where M : class, new()
+        public virtual async Task<Result> DeletAsync<M>(int id) where M : class, new()
         {
         
 
@@ -193,17 +193,17 @@ namespace MicroORM
         }
 
 
-        public virtual async Task<bool> UpdateAsync(T t, int id)
+        public virtual async Task<Result> UpdateAsync(T t, int id)
         {
             return await UpdateAsync<T>(t, id);
         }
-        public virtual async Task<bool> UpdateAsync<M>(M t, int id) where M : class, new()
+        public virtual async Task<Result> UpdateAsync<M>(M t, int id) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString());
             await using (var commander = DBContext.CreateCommanderAsync())
                 return await commander.NonQueryAsync(cmtext, commander.SetParametrs(t));
         }
-        public virtual async Task<bool> UpdateAsync(Action<Dictionary<string, object>> items, int id)
+        public virtual async Task<Result> UpdateAsync(Action<Dictionary<string, object>> items, int id)
         {
             if (items == null) throw new ArgumentNullException();
             var d = new Dictionary<string, object>();
@@ -213,11 +213,11 @@ namespace MicroORM
             d.Keys.CopyTo(columns, 0); d.Values.CopyTo(values, 0);
             return await UpdateAsync(columns, values, id);
         }
-        public virtual async Task<bool> UpdateAsync(string[] columns, object[] values, int id)
+        public virtual async Task<Result> UpdateAsync(string[] columns, object[] values, int id)
         {
             return await UpdateAsync<T>(columns, values, id);
         }
-        public virtual async Task< bool> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new()
+        public virtual async Task<Result> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString(), columns);
             var p = new List<DbParameter>();

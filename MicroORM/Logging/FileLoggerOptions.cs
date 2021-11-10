@@ -25,6 +25,8 @@ namespace MicroORM.Logging
             set { folderPath = value; }
         }
 
+        public static bool IsFileLog { get; set; } = true;
+
         private static int maxFileCount;
 
         public static int MaxFileCount

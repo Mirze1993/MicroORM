@@ -39,18 +39,18 @@ namespace MicroORM
                 var p = commander.SetParametrs(t);
                 var result = commander.Scaller(cmtext, parameters: p, transaction: transaction);
 
-                if (result.Success && result.t != null) 
-                    return new Result<int>().SuccessResult(Convert.ToInt32(t));
+                if (result.Success && result.Value != null) 
+                    return new Result<int>(). SuccessResult(Convert.ToInt32(result.Value));
                 else return new Result<int>() {Message=result.Message,Success=false };
             }
         }
 
 
-        public virtual bool Delet(int id)
+        public virtual Result Delet(int id)
         {
             return Delet<T>(id);
         }
-        public virtual bool Delet<M>(int id) where M : class, new()
+        public virtual Result Delet<M>(int id) where M : class, new()
         {
             string cmtext = query.Delete<M>(id.ToString());
             using CommanderBase commander = DBContext.CreateCommander();
@@ -190,17 +190,17 @@ namespace MicroORM
         }
 
 
-        public virtual bool Update(T t, int id)
+        public virtual Result Update(T t, int id)
         {
             return Update<T>(t, id);
         }
-        public virtual bool Update<M>(M t, int id) where M : class, new()
+        public virtual Result Update<M>(M t, int id) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString());
             using (CommanderBase commander = DBContext.CreateCommander())
                 return commander.NonQuery(cmtext, commander.SetParametrs(t));
         }
-        public virtual bool Update(Action<Dictionary<string,object>>items,int id)
+        public virtual Result Update(Action<Dictionary<string,object>>items,int id)
         {
             if(items == null) throw new ArgumentNullException();
             var d=new Dictionary<string, object>();
@@ -210,11 +210,11 @@ namespace MicroORM
             d.Keys.CopyTo(columns, 0);d.Values.CopyTo(values, 0);
             return Update(columns, values, id);
         }
-        public virtual bool Update(string[] columns, object[] values, int id)
+        public virtual Result Update(string[] columns, object[] values, int id)
         {
             return Update<T>(columns, values, id);
         }
-        public virtual bool Update<M>(string[] columns, object[] values, int id) where M : class, new()
+        public virtual Result Update<M>(string[] columns, object[] values, int id) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString(), columns);
             var p = new List<DbParameter>();
