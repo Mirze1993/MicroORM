@@ -15,7 +15,7 @@ namespace MicroORM.Logging
             return Convert.ToInt32(logLevel) >= Convert.ToInt32(FileLoggerOptions.MinLogLevel);
         }
 
-        private static object l = new object();
+        private static readonly object l = new object();
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         public async Task WriteFileAsync(string text, LogLevel logLevel)
         {

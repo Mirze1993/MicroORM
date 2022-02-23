@@ -60,13 +60,13 @@ namespace MicroORM
 
         public Result NonQuery(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            var cs = CommandStart(commandText, parameters, commandType, transaction);
-            if (!cs.Success)
-                return cs;
-            ConnectionOpen();
             bool b = false;
             try
             {
+                var cs = CommandStart(commandText, parameters, commandType, transaction);
+                if (!cs.Success)
+                    return cs;
+                ConnectionOpen();
                 b = command.ExecuteNonQuery() > 0;
             }
             catch (Exception e)
@@ -74,19 +74,20 @@ namespace MicroORM
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
                 return new Result(false, e.Message);
             }
-            return  new Result();
+            return  new Result() { Success=b};
         }
 
 
         public Result<object> Scaller(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            var cs = CommandStart(commandText, parameters, commandType, transaction);
-            if (!cs.Success)
-                return new Result<object>{Success=false,Message= cs.Message };
-            ConnectionOpen();
+           
             object b = null;
             try
             {
+                var cs = CommandStart(commandText, parameters, commandType, transaction);
+                if (!cs.Success)
+                    return new Result<object> { Success = false, Message = cs.Message };
+                ConnectionOpen();
                 b = command.ExecuteScalar();
                 return new Result<object> {Value=b };
             }
@@ -102,13 +103,14 @@ namespace MicroORM
         //reader
         public Result<T> Reader<T>(Func<DbDataReader, T> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            var cs = CommandStart(commandText, parameters, commandType, transaction);
-            if (!cs.Success)
-                return new Result<T> { Success = false, Message = cs.Message };
-            ConnectionOpen();
+            
             T t = default(T);
             try
             {
+                var cs = CommandStart(commandText, parameters, commandType, transaction);
+                if (!cs.Success)
+                    return new Result<T> { Success = false, Message = cs.Message };
+                ConnectionOpen();
                 reader = command.ExecuteReader();
                 t = readMetod(reader);
             }

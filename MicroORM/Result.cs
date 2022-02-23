@@ -26,6 +26,13 @@ namespace MicroORM
         {
 
         }
+        public Result ErrorResult(string msg)
+        {
+            Message = msg;
+            Success = false;
+            return this;
+        }
+
         public Result(bool success, string message)
         {
             Success = success;

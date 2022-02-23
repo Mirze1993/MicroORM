@@ -53,15 +53,14 @@ namespace MicroORM
         }
 
         public async Task<Result> NonQueryAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
-        {
-
-            var cs = CommandStart(commandText, parameters, commandType, transaction);
-            if (!cs.Success)
-                return await Task.FromResult(cs);
-            await ConnectionOpenAsync();
+        {            
             bool b = false;
             try
             {
+                var cs = CommandStart(commandText, parameters, commandType, transaction);
+                if (!cs.Success)
+                    return await Task.FromResult(cs);
+                await ConnectionOpenAsync();
                 b =await command.ExecuteNonQueryAsync() > 0;
             }
             catch (Exception e)
@@ -69,18 +68,19 @@ namespace MicroORM
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
                 return new Result(false, e.Message);
             }
-            return new Result();            
+            return new Result() { Success=b};            
         }
         public async Task<Result<object>> ScallerAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
 
-            var cs = CommandStart(commandText, parameters, commandType, transaction);
-            if (!cs.Success)
-                return new Result<object> { Success = false, Message = cs.Message };
-            await ConnectionOpenAsync();
+           
             object b = null;
             try
             {
+                var cs = CommandStart(commandText, parameters, commandType, transaction);
+                if (!cs.Success)
+                    return new Result<object> { Success = false, Message = cs.Message };
+                await ConnectionOpenAsync();
                 b =await command.ExecuteScalarAsync();
                 return new Result<object> { Value = b };
             }
@@ -94,14 +94,13 @@ namespace MicroORM
         //reader
         public async Task< Result<T>> ReaderAsync<T>(Func<DbDataReader, Task<T>> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-
-            var cs = CommandStart(commandText, parameters, commandType, transaction);
-            if (!cs.Success)
-                return new Result<T> { Success = false, Message = cs.Message };
-            await ConnectionOpenAsync();
             T t = default(T);
             try
             {
+                var cs = CommandStart(commandText, parameters, commandType, transaction);
+                if (!cs.Success)
+                    return new Result<T> { Success = false, Message = cs.Message };
+                await ConnectionOpenAsync();
                 reader =await command.ExecuteReaderAsync();
                 t =await readMetod(reader);
             }

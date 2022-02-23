@@ -1,6 +1,9 @@
 ﻿using MicroORM;
+using MicroORM.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace TestConcole
 {
@@ -8,14 +11,49 @@ namespace TestConcole
     {
         static void Main(string[] args)
         {
-            MicroORM.ORMConfig.ConnectionString = "Server=.\\SQLExpress;Database=Dama;Integrated Security=true;";
-            MicroORM.ORMConfig.DbType = MicroORM.DbType.MSSQL;
+            //MicroORM.ORMConfig.ConnectionString = "Server=.\\SQLExpress;Database=Bonus;Integrated Security=true;";
+            //MicroORM.ORMConfig.DbType = MicroORM.DbType.MSSQL;
+            //MicroORM.Logging.DBLoggerOptions.IsDbLogger = true;
+            //MicroORM.Logging.DBLoggerOptions.LogDbName = "AppLog";
 
-            var rep = new UserRepostory();
+            AllConfig.SetConfig(mm => {
+                mm.ConnectionString = "Server=.\\SQLExpress;Database=Bonus;Integrated Security=true;";
+                mm.DbType= MicroORM.DbType.MSSQL;
+                mm.IsDbLogger = true;
+                mm.LogDbName = "AppLog";                
+            });
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var t = DbLogger.WriteDb("few");
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+
+            sw.Start();
+            var t2 = DbLogger.WriteDbAsync("few").Result;
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+
+            sw.Start();
+            var t3 = DbLogger.WriteDbAsync("few").Result;
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+
+            sw.Start();
+
+            
+            for (int i = 0; i < 1000; i++)
+            {
+                 DbLogger.WriteDb("asd");
+            }
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+
+            //var rep = new UserRepostory();
             //rep.Insert<UserClaims>(new UserClaims { AppUserId = 1,Issuer="Sef",Type="efd",Value="fsef",ValueType="sef" });
             //rep r=ue.GetByColumNameFistLeftJoin<UserClaims>("Id",1);
-            var r = rep.GetUserss();
-            Console.WriteLine(r.Email);
+            //var r = rep.GetUserss();
+            Console.WriteLine(t.Message);
 
         }
 
@@ -26,7 +64,7 @@ namespace TestConcole
                 using (var comander = DBContext.CreateCommander())
                 {
                     
-                     var (i,b)=comander.Reader<AppUser>(
+                     var r=comander.Reader<AppUser>(
                         mm => {
                             while (mm.Read())
                             {
@@ -38,7 +76,7 @@ namespace TestConcole
                             return null;
                         },                        
                         commandText: $"select * from AppUser m left join UserClaims u on u.AppUserId = m.Id");
-                    return i;
+                    return r.Value;
                 }              
             }
 

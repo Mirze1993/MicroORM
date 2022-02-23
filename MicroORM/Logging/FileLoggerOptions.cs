@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MicroORM.Logging
 {
-    public static class FileLoggerOptions
+     static class FileLoggerOptions
     {
         private static int maxFileMB;
         public static int MaxFileMB
