@@ -23,31 +23,53 @@ namespace MicroORM
                 }
             return parametrs;
         }
+        public override DbParameter SetParametr()
+        {
+            return new SqlParameter();
+        }
 
         public override DbParameter SetParametr(string paramName, object value)
         {
             return new SqlParameter($"@{paramName}", value);
         }
 
-        public override DbParameter SetOutputParametr()
+        public override DbParameter SetReturnParametr()
         {
             SqlParameter p = new SqlParameter();
             p.Direction = System.Data.ParameterDirection.ReturnValue;
             return p;
         }
 
-        public override DbParameter SetParametr()
-        {
-            return new SqlParameter();
-        }
-
-        public override DbParameter SetOutputParametr(string paramName)
+        public override DbParameter SetReturnParametr(string paramName)
         {
             SqlParameter p = new SqlParameter();
             p.ParameterName = paramName;
             p.Direction = System.Data.ParameterDirection.ReturnValue;
             return p;
         }
+
+
+        public override DbParameter SetOutParametr(string paramName, System.Data.DbType dbType)
+        {
+            SqlParameter p = new SqlParameter();
+            p.ParameterName = "@" + paramName;
+            p.DbType = dbType;
+            p.Direction = System.Data.ParameterDirection.Output;
+            return p;
+        }
+
+
+        public override DbParameter SetInputOutputParametr(string paramName, object value)
+        {
+            SqlParameter p = new SqlParameter("@"+paramName, value);
+            p.Direction = System.Data.ParameterDirection.InputOutput;
+            return p;
+        }
+
+
+
+
+
 
         public SqlCommander()
         {

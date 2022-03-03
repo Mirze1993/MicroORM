@@ -14,8 +14,14 @@ namespace MicroORM
             Value = result;
             return this;
         }
+        public Result<T> ErrorResult(string msg)
+        {
+            Success = false;
+            Message = msg;
+            return this;
+        }
 
-       
+
     }
     public class Result
     {
@@ -26,6 +32,8 @@ namespace MicroORM
         {
 
         }
+
+
         public Result ErrorResult(string msg)
         {
             Message = msg;
@@ -38,5 +46,11 @@ namespace MicroORM
             Success = success;
             Message = message;
         }
+        public Result SuccessResult(string message)
+        {
+            Message = message;
+            return this;
+        }
+
     }
 }

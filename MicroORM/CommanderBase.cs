@@ -25,8 +25,12 @@ namespace MicroORM
         public abstract DbParameter SetParametr(string paramName, object value);
         public abstract DbParameter SetParametr();
 
-        public abstract DbParameter SetOutputParametr();
-        public abstract DbParameter SetOutputParametr(string paramName);
+        public abstract DbParameter SetReturnParametr();
+        public abstract DbParameter SetReturnParametr(string paramName);
+
+
+        public abstract DbParameter SetOutParametr(string paramName, System.Data.DbType dbType);
+        public abstract DbParameter SetInputOutputParametr(string paramName, object value);
 
         protected void ConnectionOpen()
         {
