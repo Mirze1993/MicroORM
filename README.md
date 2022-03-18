@@ -76,3 +76,10 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <li>Result&lt;List&lt;M&gt;&gt; GetWithConditionFist&lt;M&gt;(string condition, params string[] selectColumn)</li>
 <li>Result&lt;List&lt;M&gt;&gt; GetWithConditionLeftJoinFist&lt;M,Join&gt;</li>
 </ul
+<p>Eyni Qaydada GetAll Metodlari</p>
+<ul>
+<li>Result&lt;List&lt;Questions &gt;&gt; GetAll(params string[] column)</li>
+<li>Result&lt;List&lt;Questions &gt;&gt; GetAllLeftJoin&lt;Join&gt;(params string[] column)</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetAll&lt;M&gt;(params string[] column)</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetAllLeftJoin&lt;M,Join&gt;()</li>
+</ul>
