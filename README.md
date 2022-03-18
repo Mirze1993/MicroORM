@@ -61,3 +61,23 @@ public class AppUser
 }
 	    
     
+<pre class="language-csharp"><code> public interface IQuestionsRepository:ICRUD&lt;Questions&gt;
+    {
+    }</code></pre>
+<pre class="language-csharp"><code> public class QuestionsRepository:CRUD&lt;Questions&gt;, IQuestionsRepository
+    {
+
+    }</code></pre>
+<p>bu zaman QuestionsRepository sinifinde olan metodlar</p>
+<p>1.Insert&nbsp;&nbsp;</p>
+<ul>
+<li>Result&lt;int&gt; Insert(Questions t, DbTransaction transaction = null)</li>
+<li>Result&lt;int&gt; Insert(Action&lt;Questions &gt; item, DbTransaction transaction = null)</li>
+<li>Result&lt;int&gt; public virtual Result&lt;int&gt; Insert&lt;M&gt;(M t, DbTransaction transaction = null)</li>
+</ul>
+<p>&nbsp;</p>
+<p>2.</p>
+<ul>
+<li>Result Delet(int id, DbTransaction transaction = null)</li>
+<li>Result Delet&lt;M&gt;(int id,DbTransaction transaction=null)</li>
+</ul>
