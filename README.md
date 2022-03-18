@@ -22,7 +22,7 @@ public class Questions
     {
 
     }</code></pre>
- <p>&nbsp;</p>  
+<p>&nbsp;</p>
 <p>bu zaman QuestionsRepository sinifinde olan metodlar</p>
 <p>1.Insert&nbsp;&nbsp;</p>
 <ul>
