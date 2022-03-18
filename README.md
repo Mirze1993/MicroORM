@@ -20,7 +20,6 @@ public class Questions
 <p>Bu interface uygun Repository yaradilir</p>
 <pre class="language-csharp"><code> public class QuestionsRepository:CRUD&lt;Questions&gt;, IQuestionsRepository
     {
-
     }</code></pre>
 <p>&nbsp;</p>
 <p>bu zaman QuestionsRepository sinifinde olan metodlar</p>
