@@ -1,43 +1,23 @@
+<p>DB -de cedvel yaradilir&nbsp;</p>
 <pre class="language-csharp"><code>CREATE TABLE [dbo].[Questions ](
-	[Name] [nvarchar](50) NULL,
-	[UserName] [nvarchar](50) NULL,
-	[Password] [nvarchar](50) NULL,
-	[Phone] [nvarchar](50) NULL,
-	[Email] [nvarchar](50) NULL,
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-
-
+	[Name] [nvarchar](50) NULL,	
+	[Id] [int] IDENTITY(1,1) NOT NULL)
+</code></pre>
+<p>&nbsp;</p>
+<p>ve bu cedvele uygun EntityClass yaradilir</p>
+<pre class="language-csharp"><code>
 public class Questions 
     {	
         public int Id { get; set; }
-
         public string Name { get; set; }
-
-        public string UserName { get; set; }
-
-        public string Password { get; set; }
-
-        public string Phone { get; set; }
-
-        public string Email { get; set; }
     }</code></pre>
-
-
-
-
-
-
-	    
-    
+<p>&nbsp;</p>
+<p>Interface yaradilir</p>
 <pre class="language-csharp"><code> public interface IQuestionsRepository:ICRUD&lt;Questions&gt;
     {
     }</code></pre>
+<p>&nbsp;</p>
+<p>Bu interface uygun Repository yaradilir</p>
 <pre class="language-csharp"><code> public class QuestionsRepository:CRUD&lt;Questions&gt;, IQuestionsRepository
     {
 
