@@ -42,15 +42,13 @@ public class Questions
 <pre class="language-csharp"><code>[DbMaping(DbMap.noMaping)]
 public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <p>bele property ve</p>
-<pre class="language-csharp"><code>public AppUser()
-{
-   UserClaims = new List&lt;UserClaims&gt;();
-}</code></pre>
-<p>metod olmalidir</p>
+<pre class="language-csharp"><code> public void Join(Join j)
+ {
+       Join.Add(j);
+  }</code></pre>
+<p>Join adinda metod olmalidir</p>
 <ul>
 <li>Result&lt;List&lt;M&gt;&gt; GetByColumNameLeftJoin&lt;M, Join&gt;(string columName, object value) -umumi hal</li>
 </ul>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<li>Result Delet&lt;M&gt;(int id,DbTransaction transaction=null)</li>
-</ul>
