@@ -62,3 +62,17 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <li>Result&lt;M&gt; GetByColumNameFist&lt;M&gt;(string columName, object value, params string[] selectColumn)</li>
 <li>Result&lt;M&gt; GetByColumNameFistLeftJoin&lt;M, Join&gt;(string columName, object value)</li>
 </ul>
+<p>eyni zamanda Queryde where keywordunden sonra hisseni yazib netice elde etmek ucun olan metodlar</p>
+<ul>
+<li>&nbsp;Result&lt;List&lt;Questions&gt;&gt; GetWithCondition(string condition, params string[] selectColumn)</li>
+<li>Result&lt;List&lt;Questions&gt;&gt; GetWithConditionLeftJoin&lt;Join&gt;</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetWithCondition&lt;M&gt;(string condition, params string[] selectColumn)</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetWithConditionLeftJoin&lt;M,Join&gt;</li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+<li>Result&lt;List&lt;Questions&gt;&gt; GetWithConditionFist(string condition, params string[] selectColumn)</li>
+<li>Result&lt;List&lt;Questions&gt;&gt; GetWithConditionLeftJoinFist&lt;Join&gt;</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetWithConditionFist&lt;M&gt;(string condition, params string[] selectColumn)</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetWithConditionLeftJoinFist&lt;M,Join&gt;</li>
+</ul
