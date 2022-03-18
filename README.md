@@ -55,3 +55,10 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 </ul>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
+<p>yuxarki metodlara uygun olaraq ilk neticeni donderen asagki metodlar da vardir</p>
+<ul>
+<li>Result&lt;Questions&gt; GetByColumNameFist(string columName, object value, params string[] selectColumn)</li>
+<li>Result&lt;Questions&gt; GetByColumNameFistLeftJoin&lt;Join&gt;(string columName, object value)</li>
+<li>Result&lt;M&gt; GetByColumNameFist&lt;M&gt;(string columName, object value, params string[] selectColumn)</li>
+<li>Result&lt;M&gt; GetByColumNameFistLeftJoin&lt;M, Join&gt;(string columName, object value)</li>
+</ul>
