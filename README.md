@@ -1,4 +1,4 @@
-<pre class="language-csharp"><code>CREATE TABLE [dbo].[AppUser](
+<pre class="language-csharp"><code>CREATE TABLE [dbo].[Questions ](
 	[Name] [nvarchar](50) NULL,
 	[UserName] [nvarchar](50) NULL,
 	[Password] [nvarchar](50) NULL,
@@ -13,7 +13,7 @@ PRIMARY KEY CLUSTERED
 GO
 
 
-public class AppUser
+public class Questions 
     {	
         public int Id { get; set; }
 
@@ -29,36 +29,10 @@ public class AppUser
     }</code></pre>
 
 
-<pre class="language-csharp"><code>public class UserRepository : CRUD&lt;AppUser&gt;
-    {
-       
-    }</code></pre>
-    
-    //crud metod add to repository.     
-    //also add store proc
-    
-    
-    using (var commander = DBContext.CreateCommander())
-            {
-                var outParam = commander.SetOutputParametr();
-                var sqlparams = new List&lt;System.Data.Common.DbParameter&gt; {
-                    commander.SetParametr("Id",id),
-                    outParam
-                };
 
-                var b = commander.NonQuery("AcceptGame", commandType: System.Data.CommandType.StoredProcedure,
-                    parameters: sqlparams);
-                if (outParam.Value == null) return 0;
-                return (int)outParam.Value;
-            }
-	   
-	    startup.cs
-	     public void ConfigureServices(IServiceCollection services)
-        {
-            MicroORM.ORMConfig.ConnectionString = Config.GetConnectionString("DefaultConnection");
-            MicroORM.ORMConfig.DbType = MicroORM.DbType.MSSQL;
-            MicroORM.Logging.FileLoggerOptions.FolderPath = System.IO.Path.Combine(this.Environment.WebRootPath, "Log");
-}
+
+
+
 	    
     
 <pre class="language-csharp"><code> public interface IQuestionsRepository:ICRUD&lt;Questions&gt;
