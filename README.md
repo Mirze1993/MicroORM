@@ -33,5 +33,24 @@ public class Questions
 <p>2.</p>
 <ul>
 <li>Result Delet(int id, DbTransaction transaction = null)</li>
+<p>3. get</p>
+<ul>
+<li>&nbsp;Result&lt;List&lt;Questions&gt;&gt; GetByColumName(string columName, object value, params string[] selectColumn) &nbsp; &nbsp;columName=value serti daxilinde secimis selectColumn stunlar gelecek. eger selectColumn secilmezse butun stunlar gelecek</li>
+<li>Result&lt;List&lt;M&gt;&gt; GetByColumName&lt;M&gt;(string columName, object value, params string[] selectColumn)</li>
+<li>Result&lt;List&lt;Questions&gt;&gt; GetByColumNameLeftJoin&lt;Join&gt;(string columName, object value)&nbsp; &nbsp;bu metodan istifade etmek ucun Questions sinifinde&nbsp;</li>
+</ul>
+<pre class="language-csharp"><code>[DbMaping(DbMap.noMaping)]
+public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
+<p>bele property ve</p>
+<pre class="language-csharp"><code>public AppUser()
+{
+   UserClaims = new List&lt;UserClaims&gt;();
+}</code></pre>
+<p>metod olmalidir</p>
+<ul>
+<li>Result&lt;List&lt;M&gt;&gt; GetByColumNameLeftJoin&lt;M, Join&gt;(string columName, object value) -umumi hal</li>
+</ul>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <li>Result Delet&lt;M&gt;(int id,DbTransaction transaction=null)</li>
 </ul>
