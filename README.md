@@ -33,6 +33,7 @@ public class Questions
 <p>2.</p>
 <ul>
 <li>Result Delet(int id, DbTransaction transaction = null)</li>
+<li>Result Delet<M>(int id,DbTransaction transaction=null)</li>	
 <p>3. get</p>
 <ul>
 <li>&nbsp;Result&lt;List&lt;Questions&gt;&gt; GetByColumName(string columName, object value, params string[] selectColumn) &nbsp; &nbsp;columName=value serti daxilinde secimis selectColumn stunlar gelecek. eger selectColumn secilmezse butun stunlar gelecek</li>
