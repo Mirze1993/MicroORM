@@ -92,3 +92,12 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <li>Result&lt;List&lt;M&gt;&gt; GetAll&lt;M&gt;(params string[] column)</li>
 <li>Result&lt;List&lt;M&gt;&gt; GetAllLeftJoin&lt;M,Join&gt;()</li>
 </ul>
+<p>4. Update&nbsp;</p>
+<ul>
+<li>Result Update(Questions &nbsp;t, int id,DbTransaction transaction = null)&nbsp; &nbsp; &nbsp;burada t butun parametrlleri update olunur</li>
+<li>&nbsp;Result Update&lt;M&gt;(M t, int id,,DbTransaction transaction = null)</li>
+<li>Result Update(Action&lt;Dictionary&lt;string,object&gt;&gt;items,int id,,DbTransaction transaction = null) &nbsp; Dictionary--de key parametrName&nbsp; &nbsp;value ise parametrin deyeridir. Yalniz qeyd olunmus parametrer deyisecek</li>
+<li>Result Update(string[] columns, object[] values, int id,DbTransaction transaction = null) &nbsp;columns.Length==values.Length&nbsp; &nbsp;olmalidir</li>
+<li>Result Update&lt;M&gt;(string[] columns, object[] values, int id,DbTransaction transaction = null)</li>
+</ul>
+<p>&nbsp;</p>
