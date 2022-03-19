@@ -206,3 +206,5 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <li>Result&lt;List&lt;T&gt;&gt; ReaderLeftJoin&lt;T,M&gt;(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
 <li>Result&lt;T&gt; ReaderLeftJoinFist&lt;T, M&gt;(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
 </ul>
+<p>Hemcinin transaction yaratmaq ucun&nbsp; -DbTransaction TransactionStart() metodu da vardir.</p>
+<p>Qeyd.Yaradilis transaction mutleq commit ve ya roll back edilmelidir.Sonda Dispose edilmeidir.</p>
