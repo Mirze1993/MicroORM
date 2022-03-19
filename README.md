@@ -144,3 +144,46 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <li>Result Update&lt;M&gt;(string[] columns, object[] values, int id,DbTransaction transaction = null)</li>
 </ul>
 <p>&nbsp;</p>
+<p>Bundan elave metodlar yazib storeProsedurlar cagrila, Query-ler gonderile biler.parametrler set olunur.</p>
+<p>gelen melumatlar qeyd olunmus sinife map-lene biler ve ya map-lemek ucun mentod parametr kimi teyin edile biler.</p>
+<p>Numuneler</p>
+<pre class="language-csharp"><code> public Result&lt;List&lt;CategoryResponse&gt;&gt; GetCategoryOnlyUpByType(CategoryType type)
+        {
+            using (var commander = DBContext.CreateCommander())
+            {
+                var result = commander.Reader&lt;CategoryResponse&gt;(
+                    commandText: "GetCategoryOnlyUpByType"
+                    , commandType: System.Data.CommandType.StoredProcedure
+                    , parameters: new List&lt;System.Data.Common.DbParameter&gt; { 
+                        commander.SetParametr("type", type) }
+                    );
+                return result;
+            }
+        }</code></pre>
+<p>&nbsp;</p>
+<pre class="language-csharp"><code>public Result&lt;int&gt; SingInGoogle(GoogleLoginReqType googleLoginReq)
+        {
+            using (var commander = DBContext.CreateCommander())
+            {
+                var p = commander.SetParametrs(googleLoginReq);
+                var outPr = commander.SetReturnParametr();
+                var oUserId = commander.SetOutParametr("oUserId", System.Data.DbType.Int32);               
+                oUserId.DbType = System.Data.DbType.Int32;
+                p.Add(outPr);
+                p.Add(oUserId);
+                var b = commander.NonQuery("SingInGoogle"
+                    , commandType: System.Data.CommandType.StoredProcedure
+                    , parameters: p);
+                var i = outPr.Value != null ? (int)outPr.Value : -1
+                int id = 0;
+                int.TryParse(oUserId.Value?.ToString(),out id);
+                return new Result&lt;int&gt;
+                {
+                    Success = b.Success,
+                    Value = id,
+                    Message = !string.IsNullOrWhiteSpace(b.Message) ? b.Message : i &lt; 0 ? "OldUser" : "NewUser"
+                };
+            }
+        }</code></pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
