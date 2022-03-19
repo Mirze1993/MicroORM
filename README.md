@@ -187,3 +187,22 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
         }</code></pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
+<p>yuxarki numunedeki comander obyektinde olan metodlar</p>
+<ul>
+<li>DbParameter SetParametr(string paramName, object value)</li>
+<li>DbParameter SetParametr()&nbsp;</li>
+<li>DbParameter SetReturnParametr(string paramName)</li>
+<li>DbParameter SetReturnParametr()</li>
+<li>DbParameter SetOutParametr(string paramName, System.Data.DbType dbType)</li>
+<li>DbParameter SetInputOutputParametr(string paramName, object value)</li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+<li>Result NonQuery(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+<li>Result&lt;object&gt; Scaller(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+<li>Reader&lt;T&gt;(Func&lt;DbDataReader, T&gt; readMetod, string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+<li>Result&lt;List&lt;T&gt;&gt; Reader&lt;T&gt;(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+<li>&nbsp;ReaderFist&lt;T&gt;(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+<li>Result&lt;List&lt;T&gt;&gt; ReaderLeftJoin&lt;T,M&gt;(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+<li>Result&lt;T&gt; ReaderLeftJoinFist&lt;T, M&gt;(string commandText, List&lt;DbParameter&gt; parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)</li>
+</ul>
