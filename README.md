@@ -33,7 +33,7 @@ public class Questions
 <p>2.Delete</p>
 <ul>
 <li>Result Delet(int id, DbTransaction transaction = null)</li>
-<li>Result Delet<M>(int id,DbTransaction transaction=null)</li>
+<li>Result Delet&lt;M&gt;(int id,DbTransaction transaction=null)</li>
 </ul>	
 <p>3. get</p>
 <ul>
