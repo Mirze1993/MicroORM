@@ -208,3 +208,24 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 </ul>
 <p>Hemcinin transaction yaratmaq ucun&nbsp; -DbTransaction TransactionStart() metodu da vardir.</p>
 <p>Qeyd.Yaradilis transaction mutleq commit ve ya roll back edilmelidir.Sonda Dispose edilmeidir.</p>
+<p>Elave olaraq&nbsp;</p>
+<pre class="language-csharp"><code>public class HashCreate</code></pre>
+<p>sinifi.</p>
+<p>Hemcinin Mediator patern ucun Mediator sinifinde</p>
+<p>&nbsp;public Resp ToDo&lt;Req, Resp&gt;(Req req) where Req : IRequest where Resp : IResponse</p>
+<p>medodu da vardir.</p>
+<p>&nbsp;</p>
+<p>Loglama text faylina ve ya bazaya da yazilia biler. Default table name --AppLog</p>
+<p>&nbsp;</p>
+<p>AllConfig clasinda SetConfig metodu&nbsp;vastesi ile Orm config edilir.</p>
+<p>numune</p>
+<pre class="language-csharp"><code> MicroORM.AllConfig.SetConfig(c =&gt;
+                {
+                    c.ConnectionString = Configuration.GetConnectionString("BloggingDatabase");
+                    c.DbType = MicroORM.DbType.MSSQL;
+                    c.IsFileLog = true;
+                    c.FolderPath = System.IO.Path.Combine(Environment.WebRootPath, "AllLogs");
+                    c.IsDbLogger = true;
+                    c.LogDbName = "AppLog";
+                });</code></pre>
+<p>&nbsp;</p>
