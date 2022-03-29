@@ -47,17 +47,15 @@ namespace MicroORM
         }
 
 
-        public virtual async Task<Result> DeletAsync(int id)
+        public virtual async Task<Result> DeletAsync(int id, DbTransaction transaction = null)
         {
             return await DeletAsync<T>(id);
         }
-        public virtual async Task<Result> DeletAsync<M>(int id) where M : class, new()
+        public virtual async Task<Result> DeletAsync<M>(int id, DbTransaction transaction = null) where M : class, new()
         {
-        
-
            string cmtext = query.Delete<M>(id.ToString());
            await using var commander = DBContext.CreateCommanderAsync();
-            return await commander.NonQueryAsync(cmtext);
+            return await commander.NonQueryAsync(cmtext,transaction:transaction);
         }
 
 
@@ -193,17 +191,17 @@ namespace MicroORM
         }
 
 
-        public virtual async Task<Result> UpdateAsync(T t, int id)
+        public virtual async Task<Result> UpdateAsync(T t, int id, DbTransaction transaction = null)
         {
-            return await UpdateAsync<T>(t, id);
+            return await UpdateAsync<T>(t, id,transaction:transaction);
         }
-        public virtual async Task<Result> UpdateAsync<M>(M t, int id) where M : class, new()
+        public virtual async Task<Result> UpdateAsync<M>(M t, int id, DbTransaction transaction = null) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString());
             await using (var commander = DBContext.CreateCommanderAsync())
-                return await commander.NonQueryAsync(cmtext, commander.SetParametrs(t));
+                return await commander.NonQueryAsync(cmtext, commander.SetParametrs(t), transaction: transaction);
         }
-        public virtual async Task<Result> UpdateAsync(Action<Dictionary<string, object>> items, int id)
+        public virtual async Task<Result> UpdateAsync(Action<Dictionary<string, object>> items, int id, DbTransaction transaction = null)
         {
             if (items == null) throw new ArgumentNullException();
             var d = new Dictionary<string, object>();
@@ -211,13 +209,13 @@ namespace MicroORM
             string[] columns = new string[d.Count];
             object[] values = new object[d.Count];
             d.Keys.CopyTo(columns, 0); d.Values.CopyTo(values, 0);
-            return await UpdateAsync(columns, values, id);
+            return await UpdateAsync(columns, values, id,transaction:transaction);
         }
-        public virtual async Task<Result> UpdateAsync(string[] columns, object[] values, int id)
+        public virtual async Task<Result> UpdateAsync(string[] columns, object[] values, int id, DbTransaction transaction = null)
         {
-            return await UpdateAsync<T>(columns, values, id);
+            return await UpdateAsync<T>(columns, values, id,transaction:transaction);
         }
-        public virtual async Task<Result> UpdateAsync<M>(string[] columns, object[] values, int id) where M : class, new()
+        public virtual async Task<Result> UpdateAsync<M>(string[] columns, object[] values, int id, DbTransaction transaction = null) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString(), columns);
             var p = new List<DbParameter>();
@@ -227,7 +225,7 @@ namespace MicroORM
                 {
                     p.Add(commander.SetParametr(columns[i], values[i]));
                 }
-                return await commander.NonQueryAsync(cmtext, p);
+                return await commander.NonQueryAsync(cmtext, p,transaction:transaction);
             }
         }
     }

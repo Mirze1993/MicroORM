@@ -58,6 +58,7 @@ namespace MicroORM
             {
                 new Logging.LogWriteFile().WriteFile($"CommandStart error {e.Message}", LogLevel.Error);
                 return new Result(false,e.Message);
+                
             }
             return new Result();
         }
@@ -282,6 +283,5 @@ namespace MicroORM
             if (connection.State != ConnectionState.Closed) connection.Close();
             connection.Dispose();
         }
-
     }
 }

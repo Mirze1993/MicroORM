@@ -35,7 +35,7 @@ namespace MicroORM
             string cmtext = query.Insert<M>();
             using (CommanderBase commander = DBContext.CreateCommander())
             {
-
+                
                 var p = commander.SetParametrs(t);
                 var result = commander.Scaller(cmtext, parameters: p, transaction: transaction);
 
@@ -46,15 +46,15 @@ namespace MicroORM
         }
 
 
-        public virtual Result Delet(int id)
+        public virtual Result Delet(int id, DbTransaction transaction = null)
         {
-            return Delet<T>(id);
+            return Delet<T>(id, transaction);
         }
-        public virtual Result Delet<M>(int id) where M : class, new()
+        public virtual Result Delet<M>(int id,DbTransaction transaction=null) where M : class, new()
         {
             string cmtext = query.Delete<M>(id.ToString());
             using CommanderBase commander = DBContext.CreateCommander();
-            return commander.NonQuery(cmtext);
+            return commander.NonQuery(cmtext,transaction: transaction);
         }
 
 
@@ -190,17 +190,17 @@ namespace MicroORM
         }
 
 
-        public virtual Result Update(T t, int id)
+        public virtual Result Update(T t, int id,DbTransaction transaction = null)
         {
-            return Update<T>(t, id);
+            return Update<T>(t, id,transaction:transaction);
         }
-        public virtual Result Update<M>(M t, int id) where M : class, new()
+        public virtual Result Update<M>(M t, int id,DbTransaction transaction = null) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString());
             using (CommanderBase commander = DBContext.CreateCommander())
-                return commander.NonQuery(cmtext, commander.SetParametrs(t));
+                return commander.NonQuery(cmtext, commander.SetParametrs(t),transaction:transaction);
         }
-        public virtual Result Update(Action<Dictionary<string,object>>items,int id)
+        public virtual Result Update(Action<Dictionary<string,object>>items,int id,DbTransaction transaction = null)
         {
             if(items == null) throw new ArgumentNullException();
             var d=new Dictionary<string, object>();
@@ -208,13 +208,13 @@ namespace MicroORM
             string[] columns = new string[d.Count];
             object[] values = new object[d.Count];
             d.Keys.CopyTo(columns, 0);d.Values.CopyTo(values, 0);
-            return Update(columns, values, id);
+            return Update(columns, values, id,transaction);
         }
-        public virtual Result Update(string[] columns, object[] values, int id)
+        public virtual Result Update(string[] columns, object[] values, int id,DbTransaction transaction = null)
         {
-            return Update<T>(columns, values, id);
+            return Update<T>(columns, values, id,transaction);
         }
-        public virtual Result Update<M>(string[] columns, object[] values, int id) where M : class, new()
+        public virtual Result Update<M>(string[] columns, object[] values, int id,DbTransaction transaction = null) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString(), columns);
             var p = new List<DbParameter>();
@@ -224,7 +224,7 @@ namespace MicroORM
                 {
                     p.Add(commander.SetParametr(columns[i], values[i]));
                 }
-                return commander.NonQuery(cmtext, p);
+                return commander.NonQuery(cmtext, p,transaction:transaction);
             }
         }
 

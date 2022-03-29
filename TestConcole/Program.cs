@@ -1,4 +1,5 @@
 ﻿using MicroORM;
+using MicroORM.Attributes;
 using MicroORM.Logging;
 using System;
 using System.Collections.Generic;
@@ -70,7 +71,7 @@ namespace TestConcole
                             {
                                 var t = comander.GetValues<AppUser>(mm);
                                 var c= comander.GetValues<UserClaims>(mm);
-                                t.Add(c);
+                                //t.Add(c);
                                 return t;
                             }
                             return null;
@@ -91,17 +92,21 @@ namespace TestConcole
             public string Name { get; set; }
             public string Password { get; set; }
 
-            public List<UserClaims> UserClaims { get; set; }
+            //[DbMaping(DbMap.noMaping)]
+            //public List<Join> Join { get; set; } = new();
 
-            public AppUser()
-            {
-                UserClaims = new List<UserClaims>();
-            }
 
-            public void Add(UserClaims o)
-            {
-                UserClaims.Add(o);
-            }
+
+
+            //public AppUser()
+            //{
+            //    UserClaims = new List<UserClaims>();
+            //}
+
+            //public void Join(Join j)
+            //{
+            //    Join.Add(j);
+            //}
         }
 
         public class UserClaims
