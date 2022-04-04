@@ -269,4 +269,8 @@ namespace MicroORM
         #endregion
 
     }
+
+    internal class Csync<T> : CRUD<T> where T : class, new()
+    {
+    }
 }

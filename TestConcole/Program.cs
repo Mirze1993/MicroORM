@@ -84,7 +84,13 @@ namespace TestConcole
 
         }
 
-
+        public class UserRepostory1 : CRUDSyncAndAsync<AppUser>
+        {
+            //void getId()
+            //{
+            //    AsyncMetod.
+            //}
+        }    
         public class AppUser
         {
             public int Id { get; set; }

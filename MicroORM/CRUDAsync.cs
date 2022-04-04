@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MicroORM
 {
-    public abstract class CRUDAsync<T> : ICRUDAsync<T> where T : class, new()
+    public abstract  class CRUDAsync<T> : ICRUDAsync<T> where T : class, new()
     {
         IQuery query;
         public DBContext DBContext { get; set; }
@@ -229,4 +229,10 @@ namespace MicroORM
             }
         }
     }
+
+    
+    internal class Casync<T>:CRUDAsync<T> where T : class, new()
+    {
+    }
+
 }
