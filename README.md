@@ -177,3 +177,4 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
                 });</code></pre>
 <p>&nbsp;</p>
 <p>Yuxarda qeyd olunan metodlarin siniflerin async variantlari da vardir</p>
+<p>--------</p>
