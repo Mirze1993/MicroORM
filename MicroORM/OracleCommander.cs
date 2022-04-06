@@ -1,8 +1,8 @@
-﻿
+﻿using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.OracleClient;
+
 
 
 namespace MicroORM
@@ -75,7 +75,7 @@ namespace MicroORM
             connectionString = ORMConfig.ConnectionString;
             try
             {
-                connection = new OracleConnection(connectionString);
+                connection = new OracleConnection(connectionString); 
             }
             catch (Exception e)
             {

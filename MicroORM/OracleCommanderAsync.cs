@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.OracleClient;
-using System.Text;
 
 namespace MicroORM
 {
