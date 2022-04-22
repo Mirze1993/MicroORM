@@ -21,6 +21,13 @@ namespace MicroORM.Interface
         Task<Result<List<M>>> GetByColumNameAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new();
         Task<Result<List<M>>> GetByColumNameLeftJoinAsync<M, Join>(string columName, object value) where M : class, new() where Join : class, new();
 
+
+        Task<Result<List<T>>> GetByColumsAsync(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn);
+        Task<Result<List<M>>> GetByColumsAsync<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new();
+       Task<Result<T>> GetByColumsFistAsync(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn);
+        Task<Result<M>> GetByColumsFistAsync<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new();
+
+
         Task<Result<T>> GetByColumNameFistAsync(string columName, object value, params string[] selectColumn);
         Task<Result<T>> GetByColumNameFistLeftJoinAsync<Join>(string columName, object value) where Join : class, new();
         Task<Result<M>> GetByColumNameFistAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new();

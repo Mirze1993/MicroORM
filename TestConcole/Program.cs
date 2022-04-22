@@ -4,56 +4,78 @@ using MicroORM.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TestConcole
 {
     class Program
     {
+
+        public static string GetByColumName(string o, string[] columNames, params string[] selectColumn) 
+        {
+            var s = columNames.Select(c => $"{c} = @{c}")?.Aggregate((a, b) => $"{a} {o} {b}");
+
+            return s;
+        }
+
         static void Main(string[] args)
         {
-            //MicroORM.ORMConfig.ConnectionString = "Server=.\\SQLExpress;Database=Bonus;Integrated Security=true;";
-            //MicroORM.ORMConfig.DbType = MicroORM.DbType.MSSQL;
-            //MicroORM.Logging.DBLoggerOptions.IsDbLogger = true;
-            //MicroORM.Logging.DBLoggerOptions.LogDbName = "AppLog";
 
-            AllConfig.SetConfig(mm => {
-                mm.ConnectionString = "Server=.\\SQLExpress;Database=Bonus;Integrated Security=true;";
-                mm.DbType= MicroORM.DbType.MSSQL;
-                mm.IsDbLogger = true;
-                mm.LogDbName = "AppLog";                
-            });
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            var t = DbLogger.WriteDb("few");
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
-
-            sw.Start();
-            var t2 = DbLogger.WriteDbAsync("few").Result;
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
-
-            sw.Start();
-            var t3 = DbLogger.WriteDbAsync("few").Result;
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
-
-            sw.Start();
+            var s = new string[3] { "a", "b", "cd" };
 
             
-            for (int i = 0; i < 1000; i++)
-            {
-                 DbLogger.WriteDb("asd");
-            }
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
 
-            //var rep = new UserRepostory();
-            //rep.Insert<UserClaims>(new UserClaims { AppUserId = 1,Issuer="Sef",Type="efd",Value="fsef",ValueType="sef" });
-            //rep r=ue.GetByColumNameFistLeftJoin<UserClaims>("Id",1);
-            //var r = rep.GetUserss();
+            Console.WriteLine(GetByColumName("and", s));
+
+           
+           
+
+            AllConfig.SetConfig(mm =>
+            {
+                mm.ConnectionString = "Server=.\\SQLExpress;Database=Bonus;Integrated Security=true;";
+                mm.DbType = MicroORM.DbType.MSSQL;
+                mm.IsDbLogger = true;
+                mm.LogDbName = "AppLog";
+                mm.IsFileLog= true;
+            });
+
+            //Stopwatch sw = new Stopwatch();
+            //sw.Start();
+            //var t = DbLogger.WriteDb("few");
+            //sw.Stop();
+            //Console.WriteLine(sw.Elapsed);
+
+            //sw.Start();
+            //var t2 = DbLogger.WriteDbAsync("few").Result;
+            //sw.Stop();
+            //Console.WriteLine(sw.Elapsed);
+
+            //sw.Start();
+            //var t3 = DbLogger.WriteDbAsync("few").Result;
+            //sw.Stop();
+            //Console.WriteLine(sw.Elapsed);
+
+            //sw.Start();
+
+
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //     DbLogger.WriteDb("asd");
+            //}
+            //sw.Stop();
+            //Console.WriteLine(sw.Elapsed);
+
+            var rep = new UserRepostory1();
+            var t=rep.GetByColumsFistAsync(
+                new Dictionary<string, object> { { "Id", 2 }, { "Name", "2mirze2" } }
+            , LogicalOperator.or).Result;
+            var lf = new LogWriteFile();
+            
+            lf.WriteFileAsync("sd", LogLevel.Warning);
+            lf.WriteFileAsync("sd", LogLevel.Warning);
+            lf.WriteFileAsync("sd", LogLevel.Warning);
+
             Console.WriteLine(t.Message);
 
         }

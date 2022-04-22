@@ -11,6 +11,9 @@ namespace MicroORM.Interface
         string Insert<M>() where M : class, new();
         string GetAll<M>(params string[] column) where M : class, new();     
         string GetByColumName<M>(string columName, params string[] selectColumn) where M : class, new();
+
+        string GetByColumName<M>(string o, string[] columNames, params string[] selectColumn) where M : class, new();
+
         string Condition<M>(string condition, params string[] selectColumn) where M : class, new();
         string GetAllLeftJoin<M, J>() where M : class, new() where J : class, new();      
         string GetByColumNameLeftJoin<M, J>(string columName) where M : class, new() where J : class, new(); 

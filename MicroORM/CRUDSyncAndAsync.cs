@@ -7,82 +7,87 @@ using System.Threading.Tasks;
 
 namespace MicroORM
 {
-    public abstract class CRUDSyncAndAsync<T>: ICRUDSyncAndAsync<T> where T : class, new()
+    public abstract class CRUDSyncAndAsync<T> : ICRUDSyncAndAsync<T> where T : class, new()
     {
+
         private CRUD<T> syncMetod;
 
         private CRUD<T> SyncMetod()
         {
-            return syncMetod??new Csync<T>();         
+            if (syncMetod == null)
+                syncMetod = new Csync<T>();
+            return syncMetod;
         }
 
         private CRUDAsync<T> asyncMetod;
 
         private CRUDAsync<T> AsyncMetod()
         {
-             return asyncMetod ?? new Casync<T>();           
+            if (asyncMetod == null)
+                asyncMetod = new Casync<T>();
+            return asyncMetod;
         }
 
         public Result<int> Insert(T t, DbTransaction transaction = null)
         {
-           return SyncMetod().Insert(t,transaction);
+            return SyncMetod().Insert(t, transaction);
         }
 
         public Result<int> Insert(Action<T> item, DbTransaction transaction = null)
         {
-            return SyncMetod().Insert(item,transaction);
+            return SyncMetod().Insert(item, transaction);
         }
 
         public Result<int> Insert<M>(M t, DbTransaction transaction = null) where M : class, new()
         {
-            return SyncMetod().Insert(t,transaction);
+            return SyncMetod().Insert(t, transaction);
         }
 
         public Result Delet(int id, DbTransaction transaction = null)
         {
-            return SyncMetod().Delet(id,transaction);
+            return SyncMetod().Delet(id, transaction);
         }
 
         public Result Delet<M>(int id, DbTransaction transaction = null) where M : class, new()
         {
-            return SyncMetod().Delet<M>(id,transaction);
+            return SyncMetod().Delet<M>(id, transaction);
         }
 
         public Result<List<T>> GetByColumName(string columName, object value, params string[] selectColumn)
         {
-            return SyncMetod().GetByColumName(columName,value,selectColumn);
+            return SyncMetod().GetByColumName(columName, value, selectColumn);
         }
 
         public Result<List<T>> GetByColumNameLeftJoin<Join>(string columName, object value) where Join : class, new()
         {
-            return SyncMetod().GetByColumNameLeftJoin<Join>(columName,value);
+            return SyncMetod().GetByColumNameLeftJoin<Join>(columName, value);
         }
 
         public Result<List<M>> GetByColumName<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
-            return SyncMetod().GetByColumName<M>(columName,value,selectColumn);
+            return SyncMetod().GetByColumName<M>(columName, value, selectColumn);
         }
 
         public Result<List<M>> GetByColumNameLeftJoin<M, Join>(string columName, object value)
             where M : class, new()
             where Join : class, new()
         {
-            return SyncMetod().GetByColumNameLeftJoin<M,Join>(columName,value);
+            return SyncMetod().GetByColumNameLeftJoin<M, Join>(columName, value);
         }
 
         public Result<T> GetByColumNameFist(string columName, object value, params string[] selectColumn)
         {
-            return SyncMetod().GetByColumNameFist(columName,value,selectColumn);
+            return SyncMetod().GetByColumNameFist(columName, value, selectColumn);
         }
 
         public Result<T> GetByColumNameFistLeftJoin<Join>(string columName, object value) where Join : class, new()
         {
-            return SyncMetod().GetByColumNameFistLeftJoin<Join>(columName,value);
+            return SyncMetod().GetByColumNameFistLeftJoin<Join>(columName, value);
         }
 
         public Result<M> GetByColumNameFist<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
-            return SyncMetod().GetByColumNameFist<M>(columName,value,selectColumn);
+            return SyncMetod().GetByColumNameFist<M>(columName, value, selectColumn);
         }
 
         public Result<M> GetByColumNameFistLeftJoin<M, Join>(string columName, object value)
@@ -94,7 +99,7 @@ namespace MicroORM
 
         public Result<List<T>> GetWithCondition(string condition, params string[] selectColumn)
         {
-            return SyncMetod().GetWithCondition(condition,selectColumn);   
+            return SyncMetod().GetWithCondition(condition, selectColumn);
         }
 
         public Result<List<T>> GetWithConditionLeftJoin<Join>(string condition) where Join : class, new()
@@ -104,7 +109,7 @@ namespace MicroORM
 
         public Result<List<M>> GetWithCondition<M>(string condition, params string[] selectColumn) where M : class, new()
         {
-            return SyncMetod().GetWithCondition<M>(condition,selectColumn);
+            return SyncMetod().GetWithCondition<M>(condition, selectColumn);
         }
 
         public Result<List<M>> GetWithConditionLeftJoin<M, Join>(string condition)
@@ -116,7 +121,7 @@ namespace MicroORM
 
         public Result<T> GetWithConditionFist(string condition, params string[] selectColumn)
         {
-            return SyncMetod().GetWithConditionFist(condition,selectColumn);
+            return SyncMetod().GetWithConditionFist(condition, selectColumn);
         }
 
         public Result<T> GetWithConditionFistLeftJoin<Join>(string condition) where Join : class, new()
@@ -126,7 +131,7 @@ namespace MicroORM
 
         public Result<M> GetWithConditionFist<M>(string condition, params string[] selectColumn) where M : class, new()
         {
-            return SyncMetod().GetWithConditionFist<M>(condition,selectColumn);
+            return SyncMetod().GetWithConditionFist<M>(condition, selectColumn);
         }
 
         public Result<M> GetWithConditionFistLeftJoin<M, Join>(string condition)
@@ -165,7 +170,7 @@ namespace MicroORM
 
         public Result Update<M>(M t, int id, DbTransaction transaction = null) where M : class, new()
         {
-            return SyncMetod().Update<M>(t, id, transaction);   
+            return SyncMetod().Update<M>(t, id, transaction);
         }
 
         public Result Update(Action<Dictionary<string, object>> items, int id, DbTransaction transaction = null)
@@ -215,12 +220,12 @@ namespace MicroORM
 
         public Task<Result<List<T>>> GetByColumNameLeftJoinAsync<Join>(string columName, object value) where Join : class, new()
         {
-            return AsyncMetod().GetByColumNameLeftJoinAsync<Join>(columName, value);    
+            return AsyncMetod().GetByColumNameLeftJoinAsync<Join>(columName, value);
         }
 
         public Task<Result<List<M>>> GetByColumNameAsync<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
-            return AsyncMetod().GetByColumNameAsync<M>(columName, value, selectColumn);  
+            return AsyncMetod().GetByColumNameAsync<M>(columName, value, selectColumn);
         }
 
         public Task<Result<List<M>>> GetByColumNameLeftJoinAsync<M, Join>(string columName, object value)
@@ -341,6 +346,51 @@ namespace MicroORM
         public Task<Result> UpdateAsync<M>(string[] columns, object[] values, int id, DbTransaction transaction = null) where M : class, new()
         {
             return AsyncMetod().UpdateAsync<M>(columns, values, id, transaction);
+        }
+
+
+
+        public Result<List<T>> GetByColums(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
+        {
+            return SyncMetod().GetByColums(columnAndValue, o, selectColumn);
+        }
+
+        public Result<List<M>> GetByColums<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new()
+        {
+            return SyncMetod().GetByColums<M>(columnAndValue, o, selectColumn);
+        }
+
+        public Result<T> GetByColumsFist(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
+        {
+            return SyncMetod().GetByColumsFist(columnAndValue, o, selectColumn);
+        }
+
+        public Result<M> GetByColumsFist<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new()
+        {
+            return SyncMetod().GetByColumsFist<M>(columnAndValue,o, selectColumn);
+        }
+
+
+
+
+        public Task<Result<List<T>>> GetByColumsAsync(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
+        {
+            return AsyncMetod().GetByColumsAsync(columnAndValue, o, selectColumn);    
+        }
+
+        public Task<Result<List<M>>> GetByColumsAsync<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new()
+        {
+            return AsyncMetod().GetByColumsAsync<M>(columnAndValue, o, selectColumn);
+        }
+
+        public Task<Result<T>> GetByColumsFistAsync(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
+        {
+            return AsyncMetod().GetByColumsFistAsync(columnAndValue, o, selectColumn);
+        }
+
+        public Task<Result<M>> GetByColumsFistAsync<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new()
+        {
+            return AsyncMetod().GetByColumsFistAsync<M>(columnAndValue, o, selectColumn);
         }
     }
 }

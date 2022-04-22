@@ -19,6 +19,13 @@ namespace MicroORM.Interface
         Result<List<M>> GetByColumName<M>(string columName, object value, params string[] selectColumn) where M : class, new();
         Result<List<M>> GetByColumNameLeftJoin<M, Join>(string columName, object value) where M : class, new() where Join : class, new();
 
+        Result<List<T>> GetByColums(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn);
+        Result<List<M>> GetByColums<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new();
+        Result<T> GetByColumsFist(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn);
+        Result<M> GetByColumsFist<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new();
+        
+
+
         Result<T> GetByColumNameFist(string columName, object value, params string[] selectColumn);
         Result<T> GetByColumNameFistLeftJoin<Join>(string columName, object value) where Join : class, new();
         Result<M> GetByColumNameFist<M>(string columName, object value, params string[] selectColumn) where M : class, new();

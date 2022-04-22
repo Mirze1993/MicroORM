@@ -68,15 +68,11 @@ namespace MicroORM.SqlQueries
         }
         public string GetAll<M>(params string[] column) where M : class, new()
         {
-            string query = "";
+            string query;
             if (column?.Length > 0)
             {
-                string clm = "";
-                foreach (var item in column)
-                {
-                    clm += item + ",";
-                }
-                clm = clm.Remove(clm.Length - 1);
+                string clm =string.Join(" , ", column);
+              
                 query = $"SELECT {clm}  FROM {typeof(M).Name}";
             }
             else query = $"SELECT *  FROM {typeof(M).Name}";
@@ -87,6 +83,16 @@ namespace MicroORM.SqlQueries
             var q=GetAll<M>(selectColumn);
 
             q += $" WHERE {columName} =@{columName}";
+            return q;
+        }
+
+        public string GetByColumName<M>(string o,string[] columNames, params string[] selectColumn) where M : class, new()
+        {
+            var s=columNames.Select(c => $"{c} =@{c}")?.Aggregate((a,b)=>$"{a} {o} {b}");           
+
+            var q = GetAll<M>(selectColumn);
+
+            q += $" WHERE {s}";
             return q;
         }
 

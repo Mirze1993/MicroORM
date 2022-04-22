@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -85,6 +86,57 @@ namespace MicroORM
             }
 
         }
+
+
+        public virtual async Task<Result<List<T>>> GetByColumsAsync(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
+        {
+            return await GetByColumsAsync<T>(columnAndValue, o, selectColumn);
+        }
+        public virtual async Task<Result<List<M>>> GetByColumsAsync<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new()
+        {
+            string cmtext = query.GetByColumName<M>(
+                o == LogicalOperator.or ? "or" : "and"
+                , columnAndValue.Keys.ToArray()
+                , selectColumn);
+
+
+            await using (var commander = DBContext.CreateCommanderAsync())
+            {
+
+                var param = new List<DbParameter>();
+                foreach (var item in columnAndValue)
+                {
+                    param.Add(commander.SetParametr($"{item.Key}", item.Value));
+                }
+                return await commander.ReaderAsync<M>(cmtext, param);
+            }
+
+        }
+        public virtual async Task<Result<T>> GetByColumsFistAsync(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
+        {
+            return await GetByColumsFistAsync<T>(columnAndValue, o, selectColumn);
+        }
+        public virtual async Task<Result<M>> GetByColumsFistAsync<M>(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn) where M : class, new()
+        {
+            string cmtext = query.GetByColumName<M>(
+                o == LogicalOperator.or ? "or" : "and"
+                , columnAndValue.Keys.ToArray()
+                , selectColumn);
+
+
+           await using (var commander = DBContext.CreateCommanderAsync())
+            {
+
+                var param = new List<DbParameter>();
+                foreach (var item in columnAndValue)
+                {
+                    param.Add(commander.SetParametr($"{item.Key}", item.Value));
+                }
+                return await commander.ReaderFistAsync<M>(cmtext, param);
+            }
+
+        }
+
 
 
         public virtual async Task<Result<T>> GetByColumNameFistAsync(string columName, object value, params string[] selectColumn)
