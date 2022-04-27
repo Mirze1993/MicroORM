@@ -27,7 +27,7 @@ namespace MicroORM
         }
         public override DbParameter SetParametr(string paramName, object value)
         {
-            return new OracleParameter(paramName, value);
+            return new OracleParameter(paramName, value ?? DBNull.Value);
         }
 
 

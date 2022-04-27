@@ -17,9 +17,8 @@ namespace MicroORM
                 foreach (var item in typeof(T).GetProperties())
                 {
                     if (item.Name == "Id") continue;
-                    object value = item.GetValue(t);
-                    if (value == null) value = DBNull.Value;
-                    parametrs.Add(new SqlParameter($"@{item.Name}", value));
+                    object value = item.GetValue(t);                    
+                    parametrs.Add(new SqlParameter($"@{item.Name}", value?? DBNull.Value));
                 }
             return parametrs;
         }
@@ -30,7 +29,7 @@ namespace MicroORM
 
         public override DbParameter SetParametr(string paramName, object value)
         {
-            return new SqlParameter($"@{paramName}", value);
+            return new SqlParameter($"@{paramName}", value?? DBNull.Value);
         }
 
         public override DbParameter SetReturnParametr()

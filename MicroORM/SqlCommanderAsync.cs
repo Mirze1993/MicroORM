@@ -29,7 +29,7 @@ namespace MicroORM
 
         public override DbParameter SetParametr(string paramName, object value)
         {
-            return new SqlParameter($"@{paramName}", value);
+            return new SqlParameter($"@{paramName}", value ?? DBNull.Value);
         }
 
         public override DbParameter SetReturnParametr()
