@@ -237,7 +237,7 @@ namespace MicroORM
 
         public Task<Result<T>> GetByColumNameFistAsync(string columName, object value, params string[] selectColumn)
         {
-            throw new NotImplementedException();
+            return AsyncMetod().GetByColumNameFistAsync(columName, value, selectColumn);
         }
 
         public Task<Result<T>> GetByColumNameFistLeftJoinAsync<Join>(string columName, object value) where Join : class, new()
