@@ -22,6 +22,7 @@ namespace MicroORM
         public abstract List<DbParameter> SetParametrs<T>(T t);
 
 
+        public abstract DbParameter SetParametr(string paramName, object value, int size);
         public abstract DbParameter SetParametr(string paramName, object value);
         public abstract DbParameter SetParametr();
 
@@ -57,49 +58,44 @@ namespace MicroORM
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile($"CommandStart error {e.Message}", LogLevel.Error);
-                return new Result(false,e.Message);
-                
+                return new Result(false, e.Message);
+
             }
             return new Result();
         }
 
         public Result NonQuery(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            bool b = false;
             try
             {
                 var cs = CommandStart(commandText, parameters, commandType, transaction);
                 if (!cs.Success)
                     return cs;
                 ConnectionOpen();
-                b = command.ExecuteNonQuery() > 0;
+                return new Result() { Success = command.ExecuteNonQuery() > 0 };
             }
             catch (Exception e)
             {
-                new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
+                new LogWriteFile().WriteFile(e.Message, LogLevel.Error);
                 return new Result(false, e.Message);
             }
-            return  new Result() { Success=b};
         }
 
 
         public Result<object> Scaller(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-           
-            object b = null;
             try
             {
                 var cs = CommandStart(commandText, parameters, commandType, transaction);
                 if (!cs.Success)
-                    return new Result<object> { Success = false, Message = cs.Message };
+                    return new Result<object>().ErrorResult(cs.Message);
                 ConnectionOpen();
-                b = command.ExecuteScalar();
-                return new Result<object> {Value=b };
+                return new Result<object> { Value = command.ExecuteScalar() };
             }
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
-                return new Result<object> { Success = false, Message = e.Message,Value=0 };
+                return new Result<object>().ErrorResult(e.Message);
             }
         }
 
@@ -108,8 +104,6 @@ namespace MicroORM
         //reader
         public Result<T> Reader<T>(Func<DbDataReader, T> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            
-            T t = default(T);
             try
             {
                 var cs = CommandStart(commandText, parameters, commandType, transaction);
@@ -117,15 +111,15 @@ namespace MicroORM
                     return new Result<T> { Success = false, Message = cs.Message };
                 ConnectionOpen();
                 reader = command.ExecuteReader();
-                t = readMetod(reader);
+
+                return new Result<T>().SuccessResult(readMetod(reader));
             }
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
-                return  new Result<T> { Success = false, Message = e.Message };
+                return new Result<T> { Success = false, Message = e.Message };
             }
-            
-            return new Result<T>().SuccessResult(t);
+
         }
 
 
@@ -141,9 +135,9 @@ namespace MicroORM
         }
 
 
-        public Result<List<T>> ReaderLeftJoin<T,M>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new() where M : class, new()
+        public Result<List<T>> ReaderLeftJoin<T, M>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new() where M : class, new()
         {
-            return Reader(GetListLeftJoin<T,M>, commandText, parameters, commandType, transaction);
+            return Reader(GetListLeftJoin<T, M>, commandText, parameters, commandType, transaction);
         }
 
         public Result<T> ReaderLeftJoinFist<T, M>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new() where M : class, new()
@@ -174,9 +168,8 @@ namespace MicroORM
                 try
                 {
                     T t = null;
-                    int id;
                     bool b = false; ;
-                    if (int.TryParse(r["Id"].ToString(), out id))
+                    if (int.TryParse(r["Id"].ToString(), out int id))
                         b = d.TryGetValue(id, out t);
                     if (t == null)
                     {
@@ -186,15 +179,15 @@ namespace MicroORM
                     typeof(T).GetMethod("Join").Invoke(t, new[] { m });
                     if (!b) d.Add(id, t);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     new LogWriteFile().WriteFile(e.Message, LogLevel.Error);
-                }                
+                }
             }
             if (!r.IsClosed) r.Close();
             return d.Values.ToList();
         }
-               
+
         protected T GetFist<T>(DbDataReader r) where T : class, new()
         {
             if (r == null) return null;
@@ -202,25 +195,23 @@ namespace MicroORM
             T t = new T();
             while (r.Read())
             {
-                 t = GetValues<T>(r);
+                t = GetValues<T>(r);
                 break;
             }
             if (!r.IsClosed) r.Close();
             return t;
         }
-        protected T GetFistLeftJoin<T,M>(DbDataReader r) where T : class, new() where M : class, new()
+        protected T GetFistLeftJoin<T, M>(DbDataReader r) where T : class, new() where M : class, new()
         {
             if (r == null) return null;
             if (!r.HasRows) return null;
-           
+
             Dictionary<int, T> d = new Dictionary<int, T>();
-            T result = null;
             while (r.Read())
             {
                 T t = null;
-                int id;
                 bool b = false; ;
-                if (int.TryParse(r["Id"].ToString(), out id))
+                if (int.TryParse(r["Id"].ToString(), out int id))
                     b = d.TryGetValue(id, out t);
                 if (t == null)
                 {
@@ -230,10 +221,7 @@ namespace MicroORM
                 typeof(T).GetMethod("Join").Invoke(t, new[] { m });
                 if (!b) d.Add(id, t);
                 if (d.Count > 1)
-                {
-                    result = d.Values.ToList().FirstOrDefault();
                     break;
-                }
             }
             if (!r.IsClosed) r.Close();
             return d.Values?.ToList().FirstOrDefault();
@@ -256,7 +244,7 @@ namespace MicroORM
                     if (item.PropertyType.IsEnum)
                         item.SetValue(t, Enum.Parse(item.PropertyType, value.ToString()), null);
 
-                    else if (isNullableEnum(item.PropertyType))
+                    else if (IsNullableEnum(item.PropertyType))
                     {
                         item.SetValue(t, Enum.Parse(Nullable.GetUnderlyingType(item.PropertyType), value.ToString()));
                     }
@@ -266,7 +254,7 @@ namespace MicroORM
             }
             return t;
         }
-        bool isNullableEnum(Type t)
+        bool IsNullableEnum(Type t)
         {
             if (Nullable.GetUnderlyingType(t) != null)
                 if (Nullable.GetUnderlyingType(t).IsEnum)

@@ -19,6 +19,7 @@ namespace MicroORM
         protected string connectionString;
         public abstract List<DbParameter> SetParametrs<T>(T t);
 
+        public abstract DbParameter SetParametr(string paramName, object value, int size);
         public abstract DbParameter SetParametr(string paramName, object value);
         public abstract DbParameter SetParametr();
 
@@ -58,36 +59,32 @@ namespace MicroORM
         }
 
         public async Task<Result> NonQueryAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
-        {            
-            bool b = false;
+        {  
             try
             {
                 var cs = CommandStart(commandText, parameters, commandType, transaction);
                 if (!cs.Success)
                     return await Task.FromResult(cs);
-                await ConnectionOpenAsync();
-                b =await command.ExecuteNonQueryAsync() > 0;
+                await ConnectionOpenAsync();               
+                return new Result() { Success = await command.ExecuteNonQueryAsync() > 0 };
             }
             catch (Exception e)
             {
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
                 return new Result(false, e.Message);
             }
-            return new Result() { Success=b};            
+                       
         }
         public async Task<Result<object>> ScallerAsync(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-
-           
-            object b = null;
             try
             {
                 var cs = CommandStart(commandText, parameters, commandType, transaction);
                 if (!cs.Success)
                     return new Result<object> { Success = false, Message = cs.Message };
                 await ConnectionOpenAsync();
-                b =await command.ExecuteScalarAsync();
-                return new Result<object> { Value = b };
+               
+                return new Result<object> { Value = await command.ExecuteScalarAsync() };
             }
             catch (Exception e)
             {
@@ -99,23 +96,20 @@ namespace MicroORM
         //reader
         public async Task< Result<T>> ReaderAsync<T>(Func<DbDataReader, Task<T>> readMetod, string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null)
         {
-            T t = default(T);
             try
             {
                 var cs = CommandStart(commandText, parameters, commandType, transaction);
                 if (!cs.Success)
                     return new Result<T> { Success = false, Message = cs.Message };
                 await ConnectionOpenAsync();
-                reader =await command.ExecuteReaderAsync();
-                t =await readMetod(reader);
+                reader =await command.ExecuteReaderAsync();              
+                return new Result<T>().SuccessResult(await readMetod(reader));
             }
             catch (Exception e)
             {
                 await new Logging.LogWriteFile().WriteFileAsync(e.Message, LogLevel.Error);
                 return new Result<T> { Success = false, Message = e.Message };
             }
-
-            return new Result<T>().SuccessResult(t);
         }
         public async Task< Result<List<T>>> ReaderAsync<T>(string commandText, List<DbParameter> parameters = null, CommandType commandType = CommandType.Text, DbTransaction transaction = null) where T : class, new()
         {
@@ -154,10 +148,9 @@ namespace MicroORM
 
             while (await r.ReadAsync())
             {
-                T t = null;
-                int id;
+                T t = null;               
                 bool b = false; ;
-                if (int.TryParse(r["Id"].ToString(), out id))
+                if (int.TryParse(r["Id"].ToString(), out int  id))
                     b = d.TryGetValue(id, out t);
                 if (t == null)
                 {
@@ -189,16 +182,14 @@ namespace MicroORM
             if (r == null) return null;
             if (!r.HasRows) return null;
 
-            Dictionary<int, T> d = new Dictionary<int, T>();
-            T result = null;
+            Dictionary<int, T> d = new Dictionary<int, T>();           
             while (await r.ReadAsync())
             {
                 try
                 {
                     T t = null;
-                    int id;
                     bool b = false; ;
-                    if (int.TryParse(r["Id"].ToString(), out id))
+                    if (int.TryParse(r["Id"].ToString(), out int id))
                         b = d.TryGetValue(id, out t);
                     if (t == null)
                     {
@@ -207,11 +198,9 @@ namespace MicroORM
                     var m = GetValues<M>(r);
                     typeof(T).GetMethod("Join").Invoke(t, new[] { m });
                     if (!b) d.Add(id, t);
-                    if (d.Count > 1)
-                    {
-                        result = d.Values.ToList().FirstOrDefault();
+                    if (d.Count > 1)                    
                         break;
-                    }
+                    
                 }catch(Exception e)
                 {
                     await new LogWriteFile().WriteFileAsync("Metod GetFistLeftJoin:" + e.Message, LogLevel.Error);
@@ -237,7 +226,7 @@ namespace MicroORM
                     if (item.PropertyType.IsEnum)
                         item.SetValue(t, Enum.Parse(item.PropertyType, value.ToString()), null);
 
-                    else if (isNullableEnum(item.PropertyType))
+                    else if (IsNullableEnum(item.PropertyType))
                     {
                         item.SetValue(t, Enum.Parse(Nullable.GetUnderlyingType(item.PropertyType), value.ToString()));
                     }
@@ -247,7 +236,7 @@ namespace MicroORM
             }
             return t;
         }
-        bool isNullableEnum(Type t)
+        bool IsNullableEnum(Type t)
         {
             if (Nullable.GetUnderlyingType(t) != null)
                 if (Nullable.GetUnderlyingType(t).IsEnum)

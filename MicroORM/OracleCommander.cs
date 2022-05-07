@@ -22,7 +22,7 @@ namespace MicroORM
                 }
             return parametrs;
         }
-       
+
         public override DbParameter SetParametr()
         {
             return new OracleParameter();
@@ -31,42 +31,42 @@ namespace MicroORM
         {
             return new OracleParameter(paramName, value ?? DBNull.Value);
         }
-       
-        
-        
+
+        public override DbParameter SetParametr(string paramName, object value, int size)
+        {
+            return new OracleParameter($"@{paramName}", value ?? DBNull.Value) { Size = size };
+        }
+
         public override DbParameter SetReturnParametr()
         {
-            OracleParameter p = new OracleParameter();
-            p.Direction = System.Data.ParameterDirection.ReturnValue;
-            return p;
+            return new OracleParameter() { Direction = System.Data.ParameterDirection.ReturnValue };
         }
 
         public override DbParameter SetReturnParametr(string paramName)
         {
-            OracleParameter p = new OracleParameter();
-            p.ParameterName = paramName;
-            p.Direction = System.Data.ParameterDirection.ReturnValue;
-            return p;
+            return new OracleParameter()
+            {
+                ParameterName = "@" + paramName,
+                Direction = System.Data.ParameterDirection.ReturnValue
+            };
         }
 
 
 
         public override DbParameter SetOutParametr(string paramName, System.Data.DbType dbType)
         {
-           
-            OracleParameter p = new OracleParameter();
-            p.ParameterName = "@" + paramName;
-            p.DbType = dbType;
-            p.Direction = System.Data.ParameterDirection.Output;
-            return p;
+            return new OracleParameter()
+            {
+                ParameterName = "@" + paramName,
+                DbType = dbType,
+                Direction = System.Data.ParameterDirection.Output
+            };
         }
 
 
         public override DbParameter SetInputOutputParametr(string paramName, object value)
         {
-            OracleParameter p = new OracleParameter("@" + paramName, value);
-            p.Direction = System.Data.ParameterDirection.InputOutput;
-            return p;
+            return new OracleParameter("@" + paramName, value) { Direction = System.Data.ParameterDirection.InputOutput };
         }
 
 
@@ -75,7 +75,7 @@ namespace MicroORM
             connectionString = ORMConfig.ConnectionString;
             try
             {
-                connection = new OracleConnection(connectionString); 
+                connection = new OracleConnection(connectionString);
             }
             catch (Exception e)
             {

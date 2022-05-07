@@ -8,7 +8,7 @@ namespace MicroORM
 {
     public abstract class CRUD<T> : ICRUD<T> where T : class, new()
     {
-        IQuery query;
+        readonly IQuery query;
         public DBContext DBContext { get; set; }
 
         public CRUD()
@@ -33,16 +33,15 @@ namespace MicroORM
         {
             if (t == null) throw new ArgumentNullException();
             string cmtext = query.Insert<M>();
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
+            using CommanderBase commander = DBContext.CreateCommander();
 
-                var p = commander.SetParametrs(t);
-                var result = commander.Scaller(cmtext, parameters: p, transaction: transaction);
+            var p = commander.SetParametrs(t);
+            var result = commander.Scaller(cmtext, parameters: p, transaction: transaction);
 
-                if (result.Success && result.Value != null)
-                    return new Result<int>().SuccessResult(Convert.ToInt32(result.Value));
-                else return new Result<int>() { Message = result.Message, Success = false };
-            }
+            if (result.Success && result.Value != null)
+                return new Result<int>().SuccessResult(Convert.ToInt32(result.Value));
+            else return new Result<int>() { Message = result.Message, Success = false };
+
         }
 
 
@@ -69,20 +68,16 @@ namespace MicroORM
         public virtual Result<List<M>> GetByColumName<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.GetByColumName<M>(columName, selectColumn);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.Reader<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
-            }
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.Reader<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
+
 
         }
         public virtual Result<List<M>> GetByColumNameLeftJoin<M, Join>(string columName, object value) where M : class, new() where Join : class, new()
         {
             string cmtext = query.GetByColumNameLeftJoin<M, Join>(columName);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.ReaderLeftJoin<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
-            }
-
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.ReaderLeftJoin<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
         }
 
 
@@ -99,17 +94,14 @@ namespace MicroORM
                 , selectColumn);
 
 
-            using (CommanderBase commander = DBContext.CreateCommander())
+            using CommanderBase commander = DBContext.CreateCommander();
+
+            var param = new List<DbParameter>();
+            foreach (var item in columnAndValue)
             {
-
-                var param = new List<DbParameter>();
-                foreach (var item in columnAndValue)
-                {
-                    param.Add(commander.SetParametr($"{item.Key}", item.Value));
-                }
-                return commander.Reader<M>(cmtext, param);
+                param.Add(commander.SetParametr($"{item.Key}", item.Value));
             }
-
+            return commander.Reader<M>(cmtext, param);
         }
         public virtual Result<T> GetByColumsFist(Dictionary<string, object> columnAndValue, LogicalOperator o, params string[] selectColumn)
         {
@@ -122,18 +114,14 @@ namespace MicroORM
                 , columnAndValue.Keys.ToArray()
                 , selectColumn);
 
+            using CommanderBase commander = DBContext.CreateCommander();
 
-            using (CommanderBase commander = DBContext.CreateCommander())
+            var param = new List<DbParameter>();
+            foreach (var item in columnAndValue)
             {
-
-                var param = new List<DbParameter>();
-                foreach (var item in columnAndValue)
-                {
-                    param.Add(commander.SetParametr($"{item.Key}", item.Value));
-                }
-                return commander.ReaderFist<M>(cmtext, param);
+                param.Add(commander.SetParametr($"{item.Key}", item.Value));
             }
-
+            return commander.ReaderFist<M>(cmtext, param);
         }
 
 
@@ -149,19 +137,17 @@ namespace MicroORM
         public virtual Result<M> GetByColumNameFist<M>(string columName, object value, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.GetByColumName<M>(columName, selectColumn);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.ReaderFist<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
-            }
+            using CommanderBase commander = DBContext.CreateCommander();
+
+            return commander.ReaderFist<M>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
+
         }
         public virtual Result<M> GetByColumNameFistLeftJoin<M, Join>(string columName, object value) where M : class, new() where Join : class, new()
         {
             string cmtext = query.GetByColumNameLeftJoin<M, Join>(columName);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.ReaderLeftJoinFist<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
-            }
+            using CommanderBase commander = DBContext.CreateCommander();
 
+            return commander.ReaderLeftJoinFist<M, Join>(cmtext, new List<DbParameter>() { commander.SetParametr(columName, value) });
         }
 
 
@@ -176,20 +162,14 @@ namespace MicroORM
         public virtual Result<List<M>> GetWithCondition<M>(string condition, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.Condition<M>(condition, selectColumn);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.Reader<M>(cmtext);
-            }
-
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.Reader<M>(cmtext);
         }
         public virtual Result<List<M>> GetWithConditionLeftJoin<M, Join>(string condition) where M : class, new() where Join : class, new()
         {
             string cmtext = query.ConditionLeftJoin<M, Join>(condition);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.ReaderLeftJoin<M, Join>(cmtext);
-            }
-
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.ReaderLeftJoin<M, Join>(cmtext);
         }
 
         public virtual Result<T> GetWithConditionFist(string condition, params string[] selectColumn)
@@ -203,20 +183,16 @@ namespace MicroORM
         public virtual Result<M> GetWithConditionFist<M>(string condition, params string[] selectColumn) where M : class, new()
         {
             string cmtext = query.Condition<M>(condition, selectColumn);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
+            using CommanderBase commander = DBContext.CreateCommander();
+            
                 return commander.ReaderFist<M>(cmtext);
-            }
 
         }
         public virtual Result<M> GetWithConditionFistLeftJoin<M, Join>(string condition) where M : class, new() where Join : class, new()
         {
             string cmtext = query.ConditionLeftJoin<M, Join>(condition);
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                return commander.ReaderLeftJoinFist<M, Join>(cmtext);
-            }
-
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.ReaderLeftJoinFist<M, Join>(cmtext);
         }
 
 
@@ -231,14 +207,14 @@ namespace MicroORM
         public virtual Result<List<M>> GetAll<M>(params string[] column) where M : class, new()
         {
             string cmtext = query.GetAll<M>(column);
-            using (CommanderBase commander = DBContext.CreateCommander())
-                return commander.Reader<M>(cmtext);
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.Reader<M>(cmtext);
         }
         public virtual Result<List<M>> GetAllLeftJoin<M, Join>() where M : class, new() where Join : class, new()
         {
             string cmtext = query.GetAllLeftJoin<M, Join>();
-            using (CommanderBase commander = DBContext.CreateCommander())
-                return commander.ReaderLeftJoin<M, Join>(cmtext);
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.ReaderLeftJoin<M, Join>(cmtext);
         }
 
 
@@ -249,8 +225,8 @@ namespace MicroORM
         public virtual Result Update<M>(M t, int id, DbTransaction transaction = null) where M : class, new()
         {
             string cmtext = query.Update<M>(id.ToString());
-            using (CommanderBase commander = DBContext.CreateCommander())
-                return commander.NonQuery(cmtext, commander.SetParametrs(t), transaction: transaction);
+            using CommanderBase commander = DBContext.CreateCommander();
+            return commander.NonQuery(cmtext, commander.SetParametrs(t), transaction: transaction);
         }
         public virtual Result Update(Action<Dictionary<string, object>> items, int id, DbTransaction transaction = null)
         {
@@ -270,14 +246,13 @@ namespace MicroORM
         {
             string cmtext = query.Update<M>(id.ToString(), columns);
             var p = new List<DbParameter>();
-            using (CommanderBase commander = DBContext.CreateCommander())
-            {
-                for (int i = 0; i < columns.Length; i++)
-                {
-                    p.Add(commander.SetParametr(columns[i], values[i]));
-                }
-                return commander.NonQuery(cmtext, p, transaction: transaction);
-            }
+            using CommanderBase commander = DBContext.CreateCommander();
+
+            for (int i = 0; i < columns.Length; i++)
+                p.Add(commander.SetParametr(columns[i], values[i]));
+
+            return commander.NonQuery(cmtext, p, transaction: transaction);
+
         }
 
         #region elave

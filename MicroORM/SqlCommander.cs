@@ -8,7 +8,7 @@ using System.Data.SqlClient;
 namespace MicroORM
 {
     public class SqlCommander : CommanderBase
-    {      
+    {
 
         public override List<DbParameter> SetParametrs<T>(T t)
         {
@@ -17,8 +17,8 @@ namespace MicroORM
                 foreach (var item in typeof(T).GetProperties())
                 {
                     if (item.Name == "Id") continue;
-                    object value = item.GetValue(t);                    
-                    parametrs.Add(new SqlParameter($"@{item.Name}", value?? DBNull.Value));
+                    object value = item.GetValue(t);
+                    parametrs.Add(new SqlParameter($"@{item.Name}", value ?? DBNull.Value));
                 }
             return parametrs;
         }
@@ -29,46 +29,39 @@ namespace MicroORM
 
         public override DbParameter SetParametr(string paramName, object value)
         {
-            return new SqlParameter($"@{paramName}", value?? DBNull.Value);
+            return new SqlParameter($"@{paramName}", value ?? DBNull.Value);
+        }
+        public override DbParameter SetParametr(string paramName, object value, int size)
+        {
+            return new SqlParameter($"@{paramName}", value ?? DBNull.Value) { Size = size };
         }
 
         public override DbParameter SetReturnParametr()
         {
-            SqlParameter p = new SqlParameter();
-            p.Direction = System.Data.ParameterDirection.ReturnValue;
-            return p;
+            return new SqlParameter() { Direction = System.Data.ParameterDirection.ReturnValue };
         }
 
         public override DbParameter SetReturnParametr(string paramName)
         {
-            SqlParameter p = new SqlParameter();
-            p.ParameterName = paramName;
-            p.Direction = System.Data.ParameterDirection.ReturnValue;
-            return p;
+            return new SqlParameter() { ParameterName = "@" + paramName, Direction = System.Data.ParameterDirection.ReturnValue };
         }
 
 
         public override DbParameter SetOutParametr(string paramName, System.Data.DbType dbType)
         {
-            SqlParameter p = new SqlParameter();
-            p.ParameterName = "@" + paramName;
-            p.DbType = dbType;
-            p.Direction = System.Data.ParameterDirection.Output;
-            return p;
+            return new SqlParameter()
+            {
+                ParameterName = "@" + paramName,
+                DbType = dbType,
+                Direction = System.Data.ParameterDirection.Output
+            };
         }
 
 
         public override DbParameter SetInputOutputParametr(string paramName, object value)
         {
-            SqlParameter p = new SqlParameter("@"+paramName, value);
-            p.Direction = System.Data.ParameterDirection.InputOutput;
-            return p;
+            return new SqlParameter("@" + paramName, value) { Direction = System.Data.ParameterDirection.InputOutput };
         }
-
-
-
-
-
 
         public SqlCommander()
         {
@@ -81,7 +74,7 @@ namespace MicroORM
             {
                 new Logging.LogWriteFile().WriteFile(e.Message, LogLevel.Error);
             }
-                        
+
         }
 
 
