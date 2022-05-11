@@ -28,6 +28,8 @@ namespace MicroORM
 
 
         public abstract DbParameter SetOutParametr(string paramName, System.Data.DbType dbType);
+        public abstract DbParameter SetOutParametr(string paramName, System.Data.DbType dbType, int size);
+
         public abstract DbParameter SetInputOutputParametr(string paramName, object value);
 
 

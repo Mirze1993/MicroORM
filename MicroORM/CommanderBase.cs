@@ -31,6 +31,9 @@ namespace MicroORM
 
 
         public abstract DbParameter SetOutParametr(string paramName, System.Data.DbType dbType);
+        public abstract DbParameter SetOutParametr(string paramName, System.Data.DbType dbType,int size);
+
+
         public abstract DbParameter SetInputOutputParametr(string paramName, object value);
 
         protected void ConnectionOpen()
@@ -171,13 +174,15 @@ namespace MicroORM
                     bool b = false; ;
                     if (int.TryParse(r["Id"].ToString(), out int id))
                         b = d.TryGetValue(id, out t);
-                    if (t == null)
-                    {
-                        t = GetValues<T>(r);
-                    }
-                    var m = GetValues<M>(r);
-                    typeof(T).GetMethod("Join").Invoke(t, new[] { m });
-                    if (!b) d.Add(id, t);
+                    
+                    if (t == null)                    
+                        t = GetValues<T>(r);                    
+
+                    if (r["Jid"] != DBNull.Value)                                            
+                        typeof(T).GetMethod("Join").Invoke(t, new[] { GetValues<M>(r) }); 
+                   
+                    if (!b) 
+                        d.Add(id, t);
                 }
                 catch (Exception e)
                 {
@@ -213,13 +218,15 @@ namespace MicroORM
                 bool b = false; ;
                 if (int.TryParse(r["Id"].ToString(), out int id))
                     b = d.TryGetValue(id, out t);
+
                 if (t == null)
-                {
                     t = GetValues<T>(r);
-                }
-                var m = GetValues<M>(r);
-                typeof(T).GetMethod("Join").Invoke(t, new[] { m });
-                if (!b) d.Add(id, t);
+
+                if (r["Jid"] != DBNull.Value)
+                    typeof(T).GetMethod("Join").Invoke(t, new[] { GetValues<M>(r) });
+
+                if (!b)
+                    d.Add(id, t);
                 if (d.Count > 1)
                     break;
             }

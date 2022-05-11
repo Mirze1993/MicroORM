@@ -57,7 +57,16 @@ namespace MicroORM
             };
         }
 
-
+        public override DbParameter SetOutParametr(string paramName, System.Data.DbType dbType, int size)
+        {
+            return new SqlParameter()
+            {
+                ParameterName = "@" + paramName,
+                DbType = dbType,
+                Direction = System.Data.ParameterDirection.Output,
+                Size = size
+            };
+        }
         public override DbParameter SetInputOutputParametr(string paramName, object value)
         {
             return new SqlParameter("@" + paramName, value) { Direction = System.Data.ParameterDirection.InputOutput };

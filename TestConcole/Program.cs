@@ -1,10 +1,12 @@
 ﻿using MicroORM;
 using MicroORM.Attributes;
 using MicroORM.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace TestConcole
@@ -22,14 +24,7 @@ namespace TestConcole
         static void Main(string[] args)
         {
 
-            var s = new string[3] { "a", "b", "cd" };
 
-            
-
-            Console.WriteLine(GetByColumName("and", s));
-
-           
-           
 
             AllConfig.SetConfig(mm =>
             {
@@ -37,7 +32,7 @@ namespace TestConcole
                 mm.DbType = MicroORM.DbType.MSSQL;
                 mm.IsDbLogger = true;
                 mm.LogDbName = "AppLog";
-                mm.IsFileLog= true;
+                mm.IsFileLog = true;
             });
 
             //Stopwatch sw = new Stopwatch();
@@ -67,16 +62,21 @@ namespace TestConcole
             //Console.WriteLine(sw.Elapsed);
 
             var rep = new UserRepostory1();
-            var t=rep.GetByColumsFistAsync(
-                new Dictionary<string, object> { { "Id", 2 }, { "Name", "2mirze2" } }
-            , LogicalOperator.or).Result;
-            var lf = new LogWriteFile();
-            
-            lf.WriteFileAsync("sd", LogLevel.Warning);
-            lf.WriteFileAsync("sd", LogLevel.Warning);
-            lf.WriteFileAsync("sd", LogLevel.Warning);
 
-            Console.WriteLine(t.Message);
+            var t= rep.GetByColumNameFistLeftJoin<AppUser,UserClaims>("Id",2);
+            var m = t;
+            Console.WriteLine(JsonConvert.SerializeObject(m));
+
+            //var t=rep.GetByColumsFistAsync(
+            //    new Dictionary<string, object> { { "Id", 2 }, { "Name", "2mirze2" } }
+            //, LogicalOperator.or).Result;
+            //var lf = new LogWriteFile();
+
+            //lf.WriteFileAsync("sd", LogLevel.Warning);
+            //lf.WriteFileAsync("sd", LogLevel.Warning);
+            //lf.WriteFileAsync("sd", LogLevel.Warning);
+
+            //Console.WriteLine(t.Message);
 
         }
 
@@ -120,31 +120,37 @@ namespace TestConcole
             public string Name { get; set; }
             public string Password { get; set; }
 
-            //[DbMaping(DbMap.noMaping)]
-            //public List<Join> Join { get; set; } = new();
-
-
-
-
-            //public AppUser()
-            //{
-            //    UserClaims = new List<UserClaims>();
-            //}
-
-            //public void Join(Join j)
-            //{
-            //    Join.Add(j);
-            //}
+            [DbMaping(DbMap.noMaping)]
+            public List<UserClaims> UserClaims { get; set; } 
+            public AppUser()
+            {
+                UserClaims = new List<UserClaims>();
+            }
+            public void Join(UserClaims j)
+            {
+                UserClaims.Add(j);
+            }
         }
+
+        //public class UserClaims
+        //{
+        //    public int Id { get; set; }
+        //    public int AppUserId { get; set; }
+        //    public string Type { get; set; }
+        //    public string Value { get; set; }
+        //    public string ValueType { get; set; }
+        //    public string Issuer { get; set; }
+        //}
+
 
         public class UserClaims
         {
-            public int Id { get; set; }
-            public int AppUserId { get; set; }
-            public string Type { get; set; }
-            public string Value { get; set; }
-            public string ValueType { get; set; }
-            public string Issuer { get; set; }
+            public int JId { get; set; }
+            public int JAppUserId { get; set; }
+            public string JType { get; set; }
+            public string JValue { get; set; }
+            public string JValueType { get; set; }
+            public string JIssuer { get; set; }
         }
 
     }

@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MicroORM.SqlQueries
 {
@@ -15,12 +16,12 @@ namespace MicroORM.SqlQueries
         }
         public string Update<M>(string id, string[] colms = null) where M : class, new()
         {
-            string columns = "";
+            StringBuilder columns = new StringBuilder();
             if (colms?.Length > 0)
                 foreach (var item in colms)
                 {
                     if (item == "Id") continue;
-                    columns += $"{item}=@{item} ,";
+                    columns.Append($"{item}=@{item} ,");
                 }
             else
                 foreach (var item in typeof(M).GetProperties())
@@ -30,37 +31,34 @@ namespace MicroORM.SqlQueries
                     var t = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));  
                     if (t != null) if (t.Map != DbMap.Maping) continue;
                     if (item.Name == "Id") continue;
-                    columns += $"{item.Name}=@{item.Name} ,";
+                    columns.Append($"{item.Name}=@{item.Name} ,");
                 }
-            if (!String.IsNullOrEmpty(columns))
+            if (columns.Length>0)
             {
-                columns = columns.Remove(columns.Length - 1);
+                columns.Length--;
                 return $"UPDATE  {typeof(M).Name} set {columns} Where Id={id}";
             }
             return "";
         }
         public string Insert<M>() where M : class, new()
         {
-            string columns = "";
-            string values = "";
+            StringBuilder columns = new StringBuilder();
+            StringBuilder values = new StringBuilder();
             foreach (var item in typeof(M).GetProperties())
             {
                 if (item.PropertyType.GetInterfaces().Contains(typeof(IEnumerable<>)))
                     continue;
-
                 var t = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
                 if (t != null) if (t.Map != DbMap.Maping) continue;
 
                 if (item.Name == "Id") continue;
-                columns += $"{item.Name} ,";
-                values += $"@{item.Name} ,";
+                columns.Append($"{item.Name} ,");
+                values.Append($"@{item.Name} ,");
             }
             //last "," remove
-            if (!String.IsNullOrEmpty(columns) && !String.IsNullOrEmpty(values))
+            if (columns.Length>0 && values.Length>0)
             {
-                columns = columns.Remove(columns.Length - 1);
-                values = values.Remove(values.Length - 1);
-                if (columns.Split(",").Length != values.Split(",").Length) return "";
+                columns.Length--;values.Length-- ; 
                 return $"INSERT INTO {typeof(M).Name} ({columns}) VALUES({values}) " +
                     $" ;SELECT CAST(scope_identity() AS int)";
             }
@@ -106,8 +104,22 @@ namespace MicroORM.SqlQueries
 
         public string GetAllLeftJoin<M,J>() where M : class, new() where J : class, new()
         {
-            var q=GetAll<M>();
-            q += $" m left join {typeof(J).Name} j on j.{typeof(M).Name}Id=m.Id";
+            StringBuilder columns = new StringBuilder();
+            foreach (var item in typeof(J).GetProperties())
+            {
+                if (item.PropertyType.GetInterfaces().Contains(typeof(IEnumerable<>)))
+                    continue;
+                var t = (DbMapingAttribute)Attribute.GetCustomAttribute(item, typeof(DbMapingAttribute));
+                if (t != null) if (t.Map != DbMap.Maping) continue;                
+                columns.Append($"j.{item.Name.Remove(0,1)} as {item.Name} ,");
+            }
+            if (columns.Length > 0)
+            {
+                columns.Length--;
+            }
+
+            string q = $"select m.*, {columns} from {typeof(M).Name} m" +
+                $" left join {typeof(J).Name} j on j.{typeof(M).Name}Id=m.Id";
             return q;
         }
 

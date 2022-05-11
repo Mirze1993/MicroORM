@@ -63,7 +63,16 @@ namespace MicroORM
             };
         }
 
-
+        public override DbParameter SetOutParametr(string paramName, System.Data.DbType dbType, int size)
+        {
+            return new OracleParameter()
+            {
+                ParameterName = "@" + paramName,
+                DbType = dbType,
+                Direction = System.Data.ParameterDirection.Output,
+                Size = size
+            };
+        }
         public override DbParameter SetInputOutputParametr(string paramName, object value)
         {
             return new OracleParameter("@" + paramName, value) { Direction = System.Data.ParameterDirection.InputOutput };
