@@ -179,6 +179,9 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <p>Yuxarda qeyd olunan metodlarin siniflerin async variantlari da vardir</p>
 <p>--------</p>
 <p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <p>Join olunacaq Class deyisenlerinin Evveline J herfi evez olunur</p>
 <p>&nbsp;</p>
 <pre class="language-csharp"><code> public class AppUser
@@ -199,7 +202,7 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
                 UserClaims.Add(j);
             }
         }</code></pre>
-	<p>&nbsp;</p>
+<p>---</p>
 <pre class="language-csharp"><code> public class UserClaims
         {
             public int JId { get; set; }
@@ -209,5 +212,5 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
             public string JValueType { get; set; }
             public string JIssuer { get; set; }
         }</code></pre>
-	<p>&nbsp;</p>
-<pre class="language-csharp"><code> var t= rep.GetByColumNameFistLeftJoin&lt;AppUser,UserClaims&gt;("Id",2);</code></pre><p>&nbsp;</p>
+<p>--</p>
+<pre class="language-csharp"><code> var t= rep.GetByColumNameFistLeftJoin&lt;AppUser,UserClaims&gt;("Id",2);</code></pre>
