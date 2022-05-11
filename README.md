@@ -178,3 +178,35 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
 <p>&nbsp;</p>
 <p>Yuxarda qeyd olunan metodlarin siniflerin async variantlari da vardir</p>
 <p>--------</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Join olunacaq Class deyisenlerinin Evveline J herfi evez olunur</p>
+<pre class="language-csharp"><code> public class AppUser
+        {
+            public int Id { get; set; }
+            public string Email { get; set; }
+            public string Name { get; set; }
+            public string Password { get; set; }
+
+            [DbMaping(DbMap.noMaping)]
+            public List&lt;UserClaims&gt; UserClaims { get; set; } 
+            public AppUser()
+            {
+                UserClaims = new List&lt;UserClaims&gt;();
+            }
+            public void Join(UserClaims j)
+            {
+                UserClaims.Add(j);
+            }
+        }</code></pre>
+<pre class="language-csharp"><code> public class UserClaims
+        {
+            public int JId { get; set; }
+            public int JAppUserId { get; set; }
+            public string JType { get; set; }
+            public string JValue { get; set; }
+            public string JValueType { get; set; }
+            public string JIssuer { get; set; }
+        }</code></pre>
+<pre class="language-csharp"><code> var t= rep.GetByColumNameFistLeftJoin&lt;AppUser,UserClaims&gt;("Id",2);</code></pre>
+
