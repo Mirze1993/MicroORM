@@ -190,7 +190,6 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
             public string Email { get; set; }
             public string Name { get; set; }
             public string Password { get; set; }
-
             [DbMaping(DbMap.noMaping)]
             public List&lt;UserClaims&gt; UserClaims { get; set; } 
             public AppUser()
