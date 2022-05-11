@@ -199,6 +199,7 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
                 UserClaims.Add(j);
             }
         }</code></pre>
+	<p>&nbsp;</p>
 <pre class="language-csharp"><code> public class UserClaims
         {
             public int JId { get; set; }
@@ -208,4 +209,5 @@ public List&lt;Join&gt; Join { get; set; } = new();</code></pre>
             public string JValueType { get; set; }
             public string JIssuer { get; set; }
         }</code></pre>
-<pre class="language-csharp"><code> var t= rep.GetByColumNameFistLeftJoin&lt;AppUser,UserClaims&gt;("Id",2);</code></pre>
+	<p>&nbsp;</p>
+<pre class="language-csharp"><code> var t= rep.GetByColumNameFistLeftJoin&lt;AppUser,UserClaims&gt;("Id",2);</code></pre><p>&nbsp;</p>
