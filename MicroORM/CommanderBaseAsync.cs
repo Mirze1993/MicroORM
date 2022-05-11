@@ -150,17 +150,19 @@ namespace MicroORM
 
             while (await r.ReadAsync())
             {
-                T t = null;               
+                T t = null;
                 bool b = false; ;
-                if (int.TryParse(r["Id"].ToString(), out int  id))
+                if (int.TryParse(r["Id"].ToString(), out int id))
                     b = d.TryGetValue(id, out t);
+
                 if (t == null)
-                {
                     t = GetValues<T>(r);
-                }
-                var m = GetValues<M>(r);
-                typeof(T).GetMethod("Join").Invoke(t, new[] { m });
-                if (!b) d.Add(id, t);
+
+                if (r["Jid"] != DBNull.Value)
+                    typeof(T).GetMethod("Join").Invoke(t, new[] { GetValues<M>(r) });
+
+                if (!b)
+                    d.Add(id, t);
             }
             if (!r.IsClosed)await r.CloseAsync();
             return d.Values.ToList();
@@ -193,17 +195,20 @@ namespace MicroORM
                     bool b = false; ;
                     if (int.TryParse(r["Id"].ToString(), out int id))
                         b = d.TryGetValue(id, out t);
+
                     if (t == null)
-                    {
                         t = GetValues<T>(r);
-                    }
-                    var m = GetValues<M>(r);
-                    typeof(T).GetMethod("Join").Invoke(t, new[] { m });
-                    if (!b) d.Add(id, t);
-                    if (d.Count > 1)                    
+
+                    if (r["Jid"] != DBNull.Value)
+                        typeof(T).GetMethod("Join").Invoke(t, new[] { GetValues<M>(r) });
+
+                    if (!b)
+                        d.Add(id, t);
+                    if (d.Count > 1)
                         break;
-                    
-                }catch(Exception e)
+
+                }
+                catch(Exception e)
                 {
                     await new LogWriteFile().WriteFileAsync("Metod GetFistLeftJoin:" + e.Message, LogLevel.Error);
                 }
