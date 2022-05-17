@@ -9,6 +9,7 @@ namespace MicroORM
         public T Value { get; set; } = default;
         public bool Success { get; set; } = true;
         public string Message { get; set; }
+        public int StatusCode { get; set; }
         public Result<T> SuccessResult(T result)
         {
             Value = result;
@@ -27,6 +28,7 @@ namespace MicroORM
     {
         public bool Success { get; set; } = true;
         public string Message { get; set; }
+        public int StatusCode { get; set; }
 
         public Result()
         {
