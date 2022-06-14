@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 
 namespace MicroORM
@@ -14,6 +15,8 @@ namespace MicroORM
             if (t != null)
                 foreach (var item in typeof(T).GetProperties())
                 {
+                    if (item.PropertyType.GetInterfaces().Contains(typeof(IEnumerable<>)))
+                        continue;
                     if (item.Name == "Id") continue;
                     object value = item.GetValue(t);
                     if (value == null) value = DBNull.Value;
