@@ -45,6 +45,7 @@ namespace MicroORM
 
         public DbTransaction TransactionStart()
         {
+            ConnectionOpen();
             return connection.BeginTransaction(IsolationLevel.Serializable);
         }
 

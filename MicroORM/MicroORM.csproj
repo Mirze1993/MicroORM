@@ -9,9 +9,9 @@
     <Product>MicroOrm</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>ORM</PackageTags>
-    <AssemblyVersion>3.1.2</AssemblyVersion>
-    <FileVersion>3.1.2</FileVersion>
-    <Version>3.1.2</Version>
+    <AssemblyVersion>3.1.3</AssemblyVersion>
+    <FileVersion>3.1.3</FileVersion>
+    <Version>3.1.3</Version>
     <RepositoryUrl>https://github.com/Mirze1993/MicroORM</RepositoryUrl>
     <Description>source code https://github.com/Mirze1993/MicroORM
 come soon excample ...</Description>

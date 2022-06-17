@@ -39,6 +39,7 @@ namespace MicroORM
         }
         public async Task<DbTransaction> TransactionStartAsync()
         {
+            await ConnectionOpenAsync();
             return await connection.BeginTransactionAsync(IsolationLevel.Serializable);
         }
 
